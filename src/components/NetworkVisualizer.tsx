@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef } from "react";
 import type { NetworkData, Station, RouteResult } from "@/types/network";
 import { cn } from "@/lib/utils";
 
@@ -125,10 +125,6 @@ export default function NetworkVisualizer({
                 className="animate-pulse"
                 style={{ filter: 'url(#glow)' }}
               />
-              <circle cx={s1.x} cy={s1.y} r={6} fill="hsl(var(--primary))" />
-              {idx === activeRoute.path.length - 2 && (
-                <circle cx={s2.x} cy={s2.y} r={6} fill="hsl(var(--primary))" />
-              )}
             </g>
           );
         })}
@@ -174,22 +170,6 @@ export default function NetworkVisualizer({
           );
         })}
       </svg>
-      
-      <div className="absolute top-4 left-4 flex flex-col gap-2 p-4 bg-card/95 backdrop-blur-md border rounded-xl shadow-2xl">
-        <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest border-b pb-2 mb-1">DMRC Network Key</h3>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
-          {Object.entries(LINE_COLORS).slice(0, 10).map(([name, color]) => (
-            <div key={name} className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full border border-black/10" style={{ backgroundColor: color }}></div>
-              <span className="text-[11px] font-bold">{name}</span>
-            </div>
-          ))}
-          <div className="flex items-center gap-2 border-t mt-2 pt-2 col-span-2">
-            <div className="w-3 h-3 rounded-full bg-primary border border-primary animate-pulse shadow-[0_0_8px_hsl(var(--primary))]"></div>
-            <span className="text-[11px] font-black text-primary uppercase">Calculated Path</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
