@@ -6,12 +6,16 @@ export function getShortestPath(
   startId: string,
   endId: string
 ): RouteResult | null {
+  if (!startId || !endId) return null;
+  
   const adjacencyList: Record<string, { node: string; weight: number }[]> = {};
   
   stations.forEach(s => adjacencyList[s.id] = []);
   connections.forEach(c => {
-    adjacencyList[c.from].push({ node: c.to, weight: c.weight });
-    adjacencyList[c.to].push({ node: c.from, weight: c.weight });
+    if (adjacencyList[c.from] && adjacencyList[c.to]) {
+      adjacencyList[c.from].push({ node: c.to, weight: c.weight });
+      adjacencyList[c.to].push({ node: c.from, weight: c.weight });
+    }
   });
 
   const distances: Record<string, number> = {};
@@ -46,7 +50,7 @@ export function getShortestPath(
     }
   }
 
-  if (!previous[endId] && startId !== endId) return null;
+  if (!(endId in previous) || (previous[endId] === null && startId !== endId)) return null;
 
   const path: string[] = [];
   let current: string | null = endId;
@@ -69,11 +73,15 @@ export function getMinHopsPath(
   startId: string,
   endId: string
 ): RouteResult | null {
+  if (!startId || !endId) return null;
+
   const adjacencyList: Record<string, string[]> = {};
   stations.forEach(s => adjacencyList[s.id] = []);
   connections.forEach(c => {
-    adjacencyList[c.from].push(c.to);
-    adjacencyList[c.to].push(c.from);
+    if (adjacencyList[c.from] && adjacencyList[c.to]) {
+      adjacencyList[c.from].push(c.to);
+      adjacencyList[c.to].push(c.from);
+    }
   });
 
   const queue: string[] = [startId];
@@ -93,7 +101,9 @@ export function getMinHopsPath(
     }
   }
 
-  if (!previous[endId] && startId !== endId) return null;
+  // Check if a path actually exists
+  if (!(endId in previous)) return null;
+  if (startId !== endId && previous[endId] === null) return null;
 
   const path: string[] = [];
   let curr: string | null = endId;
@@ -103,7 +113,10 @@ export function getMinHopsPath(
     path.unshift(curr);
     const prevNode = previous[curr];
     if (prevNode) {
-      const edge = connections.find(c => (c.from === curr && c.to === prevNode) || (c.to === curr && c.from === prevNode));
+      const edge = connections.find(c => 
+        (c.from === curr && c.to === prevNode) || 
+        (c.to === curr && c.from === prevNode)
+      );
       totalWeight += edge?.weight || 0;
     }
     curr = prevNode;
