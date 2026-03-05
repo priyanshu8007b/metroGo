@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import type { NetworkData, Station, RouteResult } from "@/types/network";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,18 @@ export default function NetworkVisualizer({
   const svgRef = useRef<SVGSVGElement>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
 
+  // Memoize the set of edges in the current route for O(1) lookup during render
+  const routeEdges = useMemo(() => {
+    const edges = new Set<string>();
+    if (!activeRoute) return edges;
+    const path = activeRoute.path;
+    for (let i = 0; i < path.length - 1; i++) {
+      const key = [path[i], path[i+1]].sort().join('-');
+      edges.add(key);
+    }
+    return edges;
+  }, [activeRoute]);
+
   const handleMouseDown = (id: string) => (e: React.MouseEvent) => {
     e.stopPropagation();
     setDraggingId(id);
@@ -59,16 +72,22 @@ export default function NetworkVisualizer({
     setDraggingId(null);
   };
 
-  const isEdgeInRoute = (from: string, to: string) => {
-    if (!activeRoute) return false;
-    const path = activeRoute.path;
-    for (let i = 0; i < path.length - 1; i++) {
-      if ((path[i] === from && path[i+1] === to) || (path[i] === to && path[i+1] === from)) {
-        return true;
+  // Separate connections into background and foreground (active route)
+  const sortedConnections = useMemo(() => {
+    const regular: typeof data.connections = [];
+    const active: typeof data.connections = [];
+    
+    data.connections.forEach(conn => {
+      const key = [conn.from, conn.to].sort().join('-');
+      if (routeEdges.has(key)) {
+        active.push(conn);
+      } else {
+        regular.push(conn);
       }
-    }
-    return false;
-  };
+    });
+    
+    return { regular, active };
+  }, [data.connections, routeEdges]);
 
   return (
     <div className="relative w-full h-full bg-background overflow-hidden border-r">
@@ -83,37 +102,65 @@ export default function NetworkVisualizer({
       >
         <defs>
           <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feGaussianBlur stdDeviation="4" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
         </defs>
 
-        {/* Regular Connections */}
-        {data.connections.map((conn, idx) => {
+        {/* Regular Background Connections */}
+        {sortedConnections.regular.map((conn, idx) => {
           const s1 = data.stations.find(s => s.id === conn.from);
           const s2 = data.stations.find(s => s.id === conn.to);
           if (!s1 || !s2) return null;
 
-          const inRoute = isEdgeInRoute(conn.from, conn.to);
           const lineColor = conn.line ? LINE_COLORS[conn.line] : "hsl(var(--border))";
 
           return (
-            <g key={`conn-${idx}`}>
+            <g key={`reg-conn-${idx}`}>
               <line
                 x1={s1.x}
                 y1={s1.y}
                 x2={s2.x}
                 y2={s2.y}
-                stroke={inRoute ? "hsl(var(--accent))" : lineColor}
-                strokeWidth={inRoute ? 8 : 4}
-                strokeOpacity={inRoute ? 1 : 0.6}
+                stroke={lineColor}
+                strokeWidth={4}
+                strokeOpacity={0.4}
                 className="connection-line"
-                style={inRoute ? { filter: 'url(#glow)', strokeWidth: 10 } : {}}
               />
               <text
                 x={(s1.x + s2.x) / 2}
                 y={(s1.y + s2.y) / 2 - 10}
-                className="text-[10px] fill-muted-foreground select-none font-bold"
+                className="text-[9px] fill-muted-foreground/50 select-none font-bold"
+                textAnchor="middle"
+              >
+                {conn.weight}m
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Active Route Connections (Drawn on Top) */}
+        {sortedConnections.active.map((conn, idx) => {
+          const s1 = data.stations.find(s => s.id === conn.from);
+          const s2 = data.stations.find(s => s.id === conn.to);
+          if (!s1 || !s2) return null;
+
+          return (
+            <g key={`active-conn-${idx}`}>
+              <line
+                x1={s1.x}
+                y1={s1.y}
+                x2={s2.x}
+                y2={s2.y}
+                stroke="hsl(var(--primary))"
+                strokeWidth={10}
+                className="connection-line animate-pulse"
+                style={{ filter: 'url(#glow)', strokeLinecap: 'round' }}
+              />
+              <text
+                x={(s1.x + s2.x) / 2}
+                y={(s1.y + s2.y) / 2 - 12}
+                className="text-[10px] fill-primary select-none font-black"
                 textAnchor="middle"
               >
                 {conn.weight}m
@@ -137,20 +184,24 @@ export default function NetworkVisualizer({
               <circle
                 cx={station.x}
                 cy={station.y}
-                r={isTerminus ? 12 : (station.isInterchange ? 10 : 7)}
-                fill={isInRoute ? "hsl(var(--accent))" : (isSelected ? "hsl(var(--primary))" : "hsl(var(--card))")}
+                r={isTerminus ? 14 : (station.isInterchange ? 10 : 7)}
+                fill={isInRoute ? "hsl(var(--primary))" : (isSelected ? "hsl(var(--primary))" : "hsl(var(--card))")}
                 stroke={station.isInterchange ? "hsl(var(--foreground))" : "hsl(var(--primary))"}
                 strokeWidth={station.isInterchange ? 3 : 2}
-                className="station-node shadow-xl"
+                className={cn(
+                  "station-node transition-all shadow-xl",
+                  isInRoute && "animate-pulse"
+                )}
+                style={isInRoute ? { filter: 'url(#glow)' } : {}}
               />
               <text
                 x={station.x}
-                y={station.y + 28}
+                y={station.y + 32}
                 textAnchor="middle"
                 className={cn(
                   "text-[11px] select-none transition-all duration-200 pointer-events-none",
                   isSelected ? "font-black fill-primary" : "font-bold fill-foreground",
-                  isInRoute && "fill-accent-foreground font-black scale-110"
+                  isInRoute && "fill-primary font-black scale-110"
                 )}
               >
                 {station.name}
@@ -170,8 +221,8 @@ export default function NetworkVisualizer({
             </div>
           ))}
           <div className="flex items-center gap-2 border-t mt-1 pt-1 col-span-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-accent border border-accent"></div>
-            <span className="text-[10px] font-black text-accent uppercase">Active Route</span>
+            <div className="w-2.5 h-2.5 rounded-full bg-primary border border-primary animate-pulse"></div>
+            <span className="text-[10px] font-black text-primary uppercase">Calculated Route</span>
           </div>
         </div>
       </div>
