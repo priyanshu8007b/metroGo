@@ -1,3 +1,4 @@
+
 import type { Connection, RouteResult, Station } from "@/types/network";
 
 export function getShortestPath(
@@ -7,6 +8,9 @@ export function getShortestPath(
   endId: string
 ): RouteResult | null {
   if (!startId || !endId) return null;
+  if (startId === endId) {
+    return { path: [startId], totalWeight: 0, hops: 0, type: 'shortest' };
+  }
   
   const adjacencyList: Record<string, { node: string; weight: number }[]> = {};
   
@@ -30,18 +34,22 @@ export function getShortestPath(
 
   while (nodes.size > 0) {
     let closestNode: string | null = null;
+    let minDistance = Infinity;
+
     for (const node of nodes) {
-      if (closestNode === null || distances[node] < distances[closestNode]) {
+      if (distances[node] < minDistance) {
+        minDistance = distances[node];
         closestNode = node;
       }
     }
 
-    if (closestNode === null || distances[closestNode] === Infinity) break;
+    if (closestNode === null || minDistance === Infinity) break;
     if (closestNode === endId) break;
 
     nodes.delete(closestNode);
 
     for (const neighbor of adjacencyList[closestNode]) {
+      if (!nodes.has(neighbor.node)) continue;
       const alt = distances[closestNode] + neighbor.weight;
       if (alt < distances[neighbor.node]) {
         distances[neighbor.node] = alt;
@@ -50,7 +58,7 @@ export function getShortestPath(
     }
   }
 
-  if (!(endId in previous) || (previous[endId] === null && startId !== endId)) return null;
+  if (!previous[endId] && startId !== endId) return null;
 
   const path: string[] = [];
   let current: string | null = endId;
@@ -74,6 +82,9 @@ export function getMinHopsPath(
   endId: string
 ): RouteResult | null {
   if (!startId || !endId) return null;
+  if (startId === endId) {
+    return { path: [startId], totalWeight: 0, hops: 0, type: 'min-hops' };
+  }
 
   const adjacencyList: Record<string, string[]> = {};
   stations.forEach(s => adjacencyList[s.id] = []);
@@ -88,9 +99,13 @@ export function getMinHopsPath(
   const visited = new Set<string>([startId]);
   const previous: Record<string, string | null> = { [startId]: null };
 
+  let found = false;
   while (queue.length > 0) {
     const current = queue.shift()!;
-    if (current === endId) break;
+    if (current === endId) {
+      found = true;
+      break;
+    }
 
     for (const neighbor of adjacencyList[current]) {
       if (!visited.has(neighbor)) {
@@ -101,9 +116,7 @@ export function getMinHopsPath(
     }
   }
 
-  // Check if a path actually exists
-  if (!(endId in previous)) return null;
-  if (startId !== endId && previous[endId] === null) return null;
+  if (!found) return null;
 
   const path: string[] = [];
   let curr: string | null = endId;
