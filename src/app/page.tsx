@@ -15,8 +15,7 @@ import {
   Search,
   Zap,
   Info,
-  RefreshCw,
-  Map as MapIcon
+  RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +54,9 @@ const INITIAL_DATA: NetworkData = {
     { id: "18", name: "Azadpur", x: 400, y: 150, isInterchange: true },
     { id: "19", name: "Welcome", x: 700, y: 200, isInterchange: true },
     { id: "20", name: "Anand Vihar", x: 900, y: 300, isInterchange: true },
+    { id: "21", name: "Netaji Subhash Place", x: 350, y: 220, isInterchange: true },
+    { id: "22", name: "Mayur Vihar-I", x: 800, y: 550, isInterchange: true },
+    { id: "23", name: "South Campus", x: 400, y: 650, isInterchange: true },
   ],
   connections: [
     // Yellow Line
@@ -62,23 +64,26 @@ const INITIAL_DATA: NetworkData = {
     { from: "2", to: "3", weight: 5, line: "Yellow" },
     { from: "3", to: "1", weight: 3, line: "Yellow" },
     { from: "1", to: "4", weight: 4, line: "Yellow" },
-    { from: "4", to: "15", weight: 6, line: "Yellow" },
-    { from: "15", to: "5", weight: 5, line: "Yellow" },
+    { from: "4", to: "5", weight: 10, line: "Yellow" },
     { from: "5", to: "13", weight: 15, line: "Yellow" },
     
-    // Blue Line
+    // Blue Line (Main)
     { from: "11", to: "16", weight: 12, line: "Blue" },
     { from: "16", to: "17", weight: 8, line: "Blue" },
     { from: "17", to: "7", weight: 5, line: "Blue" },
     { from: "7", to: "1", weight: 10, line: "Blue" },
     { from: "1", to: "6", weight: 3, line: "Blue" },
     { from: "6", to: "9", weight: 8, line: "Blue" },
-    { from: "9", to: "8", weight: 15, line: "Blue" },
+    { from: "9", to: "22", weight: 8, line: "Blue" },
+    { from: "22", to: "8", weight: 10, line: "Blue" },
     { from: "8", to: "12", weight: 10, line: "Blue" },
-    { from: "9", to: "20", weight: 10, line: "Blue" },
+    
+    // Blue Line (Anand Vihar Branch)
+    { from: "9", to: "20", weight: 12, line: "Blue" },
 
     // Red Line
     { from: "10", to: "2", weight: 12, line: "Red" },
+    { from: "2", to: "21", weight: 10, line: "Red" },
     { from: "2", to: "19", weight: 15, line: "Red" },
 
     // Violet Line
@@ -92,14 +97,16 @@ const INITIAL_DATA: NetworkData = {
     { from: "5", to: "14", weight: 12, line: "Magenta" },
     { from: "14", to: "8", weight: 8, line: "Magenta" },
 
-    // Pink Line
-    { from: "18", to: "10", weight: 10, line: "Pink" },
-    { from: "10", to: "17", weight: 8, line: "Pink" },
-    { from: "17", to: "15", weight: 15, line: "Pink" },
-    { from: "15", to: "19", weight: 25, line: "Pink" },
-    { from: "19", to: "20", weight: 5, line: "Pink" },
+    // Pink Line (Circular)
+    { from: "18", to: "21", weight: 6, line: "Pink" },
+    { from: "21", to: "17", weight: 8, line: "Pink" },
+    { from: "17", to: "23", weight: 10, line: "Pink" },
+    { from: "23", to: "15", weight: 12, line: "Pink" },
+    { from: "15", to: "22", weight: 15, line: "Pink" },
+    { from: "22", to: "20", weight: 8, line: "Pink" },
+    { from: "20", to: "19", weight: 6, line: "Pink" },
     
-    // Green Line Approx
+    // Green Line
     { from: "10", to: "7", weight: 5, line: "Green" },
   ]
 };
