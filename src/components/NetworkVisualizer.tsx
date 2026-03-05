@@ -61,6 +61,7 @@ export default function NetworkVisualizer({
     setDraggingId(null);
   };
 
+  // Improved unified path calculation for continuous highlighting
   const routePathD = useMemo(() => {
     if (!activeRoute || activeRoute.path.length < 2) return "";
     return activeRoute.path
@@ -114,7 +115,7 @@ export default function NetworkVisualizer({
           );
         })}
 
-        {/* Unified Active Route Highlight */}
+        {/* Unified Active Route Highlight - Corrected to avoid breaks */}
         {routePathD && (
           <path
             d={routePathD}
