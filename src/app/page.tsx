@@ -34,80 +34,90 @@ import { aiNetworkConstructor } from "@/ai/flows/ai-network-constructor";
 
 const INITIAL_DATA: NetworkData = {
   stations: [
-    { id: "1", name: "Rajiv Chowk", x: 500, y: 450, isInterchange: true },
-    { id: "2", name: "Kashmere Gate", x: 500, y: 200, isInterchange: true },
-    { id: "3", name: "New Delhi", x: 500, y: 350, isInterchange: true },
-    { id: "4", name: "Central Secretariat", x: 500, y: 550, isInterchange: true },
-    { id: "5", name: "Hauz Khas", x: 500, y: 750, isInterchange: true },
-    { id: "6", name: "Mandi House", x: 600, y: 450, isInterchange: true },
-    { id: "7", name: "Kirti Nagar", x: 300, y: 450, isInterchange: true },
-    { id: "8", name: "Botanical Garden", x: 850, y: 750, isInterchange: true },
-    { id: "9", name: "Yamuna Bank", x: 750, y: 450, isInterchange: true },
-    { id: "10", name: "Inderlok", x: 350, y: 300, isInterchange: true },
-    { id: "11", name: "Dwarka Sector 21", x: 100, y: 800, isInterchange: true },
-    { id: "12", name: "Noida Electronic City", x: 950, y: 450 },
-    { id: "13", name: "Millennium City Centre", x: 500, y: 950 },
-    { id: "14", name: "Kalkaji Mandir", x: 750, y: 750, isInterchange: true },
-    { id: "15", name: "Lajpat Nagar", x: 650, y: 650, isInterchange: true },
-    { id: "16", name: "Janakpuri West", x: 200, y: 650, isInterchange: true },
-    { id: "17", name: "Rajouri Garden", x: 250, y: 550, isInterchange: true },
-    { id: "18", name: "Azadpur", x: 400, y: 150, isInterchange: true },
-    { id: "19", name: "Welcome", x: 700, y: 200, isInterchange: true },
-    { id: "20", name: "Anand Vihar", x: 900, y: 300, isInterchange: true },
-    { id: "21", name: "Netaji Subhash Place", x: 350, y: 220, isInterchange: true },
-    { id: "22", name: "Mayur Vihar-I", x: 800, y: 550, isInterchange: true },
-    { id: "23", name: "South Campus", x: 400, y: 650, isInterchange: true },
-  ],
-  connections: [
     // Yellow Line
-    { from: "18", to: "2", weight: 8, line: "Yellow" },
-    { from: "2", to: "3", weight: 5, line: "Yellow" },
-    { from: "3", to: "1", weight: 3, line: "Yellow" },
-    { from: "1", to: "4", weight: 4, line: "Yellow" },
-    { from: "4", to: "5", weight: 10, line: "Yellow" },
-    { from: "5", to: "13", weight: 15, line: "Yellow" },
-    
-    // Blue Line (Main)
-    { from: "11", to: "16", weight: 12, line: "Blue" },
-    { from: "16", to: "17", weight: 8, line: "Blue" },
-    { from: "17", to: "7", weight: 5, line: "Blue" },
-    { from: "7", to: "1", weight: 10, line: "Blue" },
-    { from: "1", to: "6", weight: 3, line: "Blue" },
-    { from: "6", to: "9", weight: 8, line: "Blue" },
-    { from: "9", to: "22", weight: 8, line: "Blue" },
-    { from: "22", to: "8", weight: 10, line: "Blue" },
-    { from: "8", to: "12", weight: 10, line: "Blue" },
-    
-    // Blue Line (Anand Vihar Branch)
-    { from: "9", to: "20", weight: 12, line: "Blue" },
+    { id: "y1", name: "Samaypur Badli", x: 400, y: 50 },
+    { id: "y2", name: "Azadpur", x: 450, y: 150, isInterchange: true },
+    { id: "y3", name: "Kashmere Gate", x: 500, y: 250, isInterchange: true },
+    { id: "y4", name: "New Delhi", x: 500, y: 350, isInterchange: true },
+    { id: "y5", name: "Rajiv Chowk", x: 500, y: 450, isInterchange: true },
+    { id: "y6", name: "Central Secretariat", x: 500, y: 550, isInterchange: true },
+    { id: "y7", name: "Hauz Khas", x: 500, y: 750, isInterchange: true },
+    { id: "y8", name: "Millennium City Centre", x: 500, y: 950 },
+
+    // Blue Line
+    { id: "b1", name: "Dwarka Sector 21", x: 50, y: 800, isInterchange: true },
+    { id: "b2", name: "Janakpuri West", x: 200, y: 650, isInterchange: true },
+    { id: "b3", name: "Rajouri Garden", x: 300, y: 550, isInterchange: true },
+    { id: "b4", name: "Kirti Nagar", x: 350, y: 450, isInterchange: true },
+    { id: "b5", name: "Mandi House", x: 650, y: 450, isInterchange: true },
+    { id: "b6", name: "Yamuna Bank", x: 750, y: 450, isInterchange: true },
+    { id: "b7", name: "Mayur Vihar-I", x: 800, y: 550, isInterchange: true },
+    { id: "b8", name: "Botanical Garden", x: 850, y: 750, isInterchange: true },
+    { id: "b9", name: "Noida Electronic City", x: 950, y: 450 },
+    { id: "b10", name: "Anand Vihar", x: 900, y: 300, isInterchange: true },
 
     // Red Line
-    { from: "21", to: "10", weight: 8, line: "Red" },
-    { from: "10", to: "2", weight: 12, line: "Red" },
-    { from: "2", to: "19", weight: 15, line: "Red" },
+    { id: "r1", name: "Rithala", x: 200, y: 150 },
+    { id: "r2", name: "Netaji Subhash Place", x: 350, y: 200, isInterchange: true },
+    { id: "r3", name: "Inderlok", x: 400, y: 250, isInterchange: true },
+    { id: "r4", name: "Welcome", x: 800, y: 250, isInterchange: true },
+    { id: "r5", name: "Shaheed Sthal", x: 950, y: 150 },
 
     // Violet Line
-    { from: "2", to: "6", weight: 10, line: "Violet" },
-    { from: "6", to: "4", weight: 4, line: "Violet" },
-    { from: "4", to: "15", weight: 8, line: "Violet" },
-    { from: "15", to: "14", weight: 10, line: "Violet" },
+    { id: "v1", name: "Lajpat Nagar", x: 650, y: 650, isInterchange: true },
+    { id: "v2", name: "Kalkaji Mandir", x: 750, y: 750, isInterchange: true },
 
-    // Magenta Line
-    { from: "16", to: "5", weight: 20, line: "Magenta" },
-    { from: "5", to: "14", weight: 12, line: "Magenta" },
-    { from: "14", to: "8", weight: 8, line: "Magenta" },
+    // Pink Line (Loop/Circular)
+    { id: "p1", name: "South Campus", x: 400, y: 650, isInterchange: true },
+  ],
+  connections: [
+    // Yellow Line Segments
+    { from: "y1", to: "y2", weight: 8, line: "Yellow" },
+    { from: "y2", to: "y3", weight: 10, line: "Yellow" },
+    { from: "y3", to: "y4", weight: 5, line: "Yellow" },
+    { from: "y4", to: "y5", weight: 3, line: "Yellow" },
+    { from: "y5", to: "y6", weight: 4, line: "Yellow" },
+    { from: "y6", to: "y7", weight: 12, line: "Yellow" },
+    { from: "y7", to: "y8", weight: 20, line: "Yellow" },
 
-    // Pink Line (Circular)
-    { from: "18", to: "21", weight: 6, line: "Pink" },
-    { from: "21", to: "17", weight: 8, line: "Pink" },
-    { from: "17", to: "23", weight: 10, line: "Pink" },
-    { from: "23", to: "15", weight: 12, line: "Pink" },
-    { from: "15", to: "22", weight: 15, line: "Pink" },
-    { from: "22", to: "20", weight: 8, line: "Pink" },
-    { from: "20", to: "19", weight: 6, line: "Pink" },
-    
-    // Green Line
-    { from: "10", to: "7", weight: 5, line: "Green" },
+    // Blue Line Segments
+    { from: "b1", to: "b2", weight: 15, line: "Blue" },
+    { from: "b2", to: "b3", weight: 8, line: "Blue" },
+    { from: "b3", to: "b4", weight: 5, line: "Blue" },
+    { from: "b4", to: "y5", weight: 10, line: "Blue" }, // Connects to Rajiv Chowk
+    { from: "y5", to: "b5", weight: 3, line: "Blue" },
+    { from: "b5", to: "b6", weight: 8, line: "Blue" },
+    { from: "b6", to: "b7", weight: 8, line: "Blue" },
+    { from: "b7", to: "b8", weight: 10, line: "Blue" },
+    { from: "b8", to: "b9", weight: 12, line: "Blue" },
+    { from: "b6", to: "b10", weight: 15, line: "Blue" }, // Branch to Anand Vihar
+
+    // Red Line Segments
+    { from: "r1", to: "r2", weight: 10, line: "Red" },
+    { from: "r2", to: "r3", weight: 5, line: "Red" },
+    { from: "r3", to: "y3", weight: 12, line: "Red" }, // Connects to Kashmere Gate
+    { from: "y3", to: "r4", weight: 15, line: "Red" },
+    { from: "r4", to: "r5", weight: 15, line: "Red" },
+
+    // Violet Line Segments
+    { from: "y3", to: "b5", weight: 10, line: "Violet" }, // KG to Mandi House
+    { from: "b5", to: "y6", weight: 5, line: "Violet" },  // MH to Cent Sec
+    { from: "y6", to: "v1", weight: 12, line: "Violet" }, // Cent Sec to Lajpat Nagar
+    { from: "v1", to: "v2", weight: 8, line: "Violet" },
+
+    // Magenta Line Segments
+    { from: "b2", to: "y7", weight: 25, line: "Magenta" }, // Janakpuri W to Hauz Khas
+    { from: "y7", to: "v2", weight: 12, line: "Magenta" }, // Hauz Khas to Kalkaji M
+    { from: "v2", to: "b8", weight: 8, line: "Magenta" },  // Kalkaji M to Botanical G
+
+    // Pink Line Segments
+    { from: "y2", to: "r2", weight: 6, line: "Pink" },     // Azadpur to NSP
+    { from: "r2", to: "b3", weight: 10, line: "Pink" },    // NSP to Rajouri G
+    { from: "b3", to: "p1", weight: 12, line: "Pink" },    // Rajouri G to South Campus
+    { from: "p1", to: "v1", weight: 15, line: "Pink" },    // South Campus to Lajpat Nagar
+    { from: "v1", to: "b7", weight: 15, line: "Pink" },    // Lajpat Nagar to Mayur Vihar-I
+    { from: "b7", to: "b10", weight: 8, line: "Pink" },    // Mayur Vihar-I to Anand Vihar
+    { from: "b10", to: "r4", weight: 10, line: "Pink" },   // Anand Vihar to Welcome
   ]
 };
 
@@ -171,13 +181,18 @@ export default function RouteFlow() {
   };
 
   const handleResetNetwork = () => {
-    setData(INITIAL_DATA);
+    // Fresh clone to break all references
+    setData({
+      stations: [...INITIAL_DATA.stations.map(s => ({ ...s }))],
+      connections: [...INITIAL_DATA.connections.map(c => ({ ...c }))]
+    });
     setSourceId("");
     setDestId("");
     setSelectedStationId(null);
+    setOptimizationType('shortest');
     toast({ 
       title: "Network Reset", 
-      description: "Map topology and selections have been cleared." 
+      description: "Map topology and selections have been restored to default DMRC configuration." 
     });
   };
 
@@ -268,7 +283,7 @@ export default function RouteFlow() {
                     className="h-12 flex flex-col items-center justify-center transition-all"
                   >
                     <Clock className="w-4 h-4 mb-1" />
-                    <span className="text-[10px] font-bold">Fastest</span>
+                    <span className="text-[10px] font-bold">Fastest Route</span>
                   </Button>
                   <Button 
                     variant={optimizationType === 'min-hops' ? 'default' : 'outline'}
@@ -317,7 +332,7 @@ export default function RouteFlow() {
               <Card className="border-accent/30 bg-accent/5 overflow-hidden shadow-lg animate-in slide-in-from-bottom-2 duration-300">
                 <CardHeader className="p-4 bg-accent/10 border-b border-accent/20">
                   <CardTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                    <Navigation className="w-3 h-3 text-accent" /> Recommended Path
+                    <Navigation className="w-3 h-3 text-accent" /> Journey Summary
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 space-y-4">
@@ -350,7 +365,7 @@ export default function RouteFlow() {
                                 {station?.name}
                               </span>
                               {idx < activeRoute.path.length - 1 && (
-                                <span className="text-[9px] font-bold uppercase text-muted-foreground/50 tracking-tighter">
+                                <span className="text-[9px] font-bold uppercase text-muted-foreground/30 tracking-tighter">
                                   Next segment...
                                 </span>
                               )}
@@ -367,13 +382,13 @@ export default function RouteFlow() {
                 <Search className="w-10 h-10 mx-auto opacity-30" />
                 <div>
                   <p className="text-sm font-bold">Inaccessible</p>
-                  <p className="text-xs opacity-70 mt-1 leading-relaxed">No path found between terminal points in the current topological layer.</p>
+                  <p className="text-xs opacity-70 mt-1 leading-relaxed">No path found between terminals in current topological layer.</p>
                 </div>
               </div>
             ) : (
               <div className="p-8 border-2 border-dashed rounded-2xl text-center space-y-4 opacity-50">
                 <Info className="w-10 h-10 mx-auto text-muted-foreground" />
-                <p className="text-xs font-medium uppercase tracking-widest">Select route terminals for analysis</p>
+                <p className="text-xs font-medium uppercase tracking-widest">Select terminal points to view path flow</p>
               </div>
             )}
           </TabsContent>
@@ -443,7 +458,7 @@ export default function RouteFlow() {
           <TabsContent value="ai" className="flex-1 overflow-auto p-6 space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-xs font-black uppercase tracking-widest flex items-center gap-2"><Sparkles className="w-4 h-4 text-accent" /> AI Network simulation</Label>
+                <Label className="text-xs font-black uppercase tracking-widest flex items-center gap-2"><Sparkles className="w-4 h-4 text-accent" /> AI Network Simulation</Label>
                 <CardDescription className="text-xs leading-relaxed">
                   Provide a textual description of a metro line or network segment. The AI will reconstruct the adjacency list.
                 </CardDescription>
@@ -466,7 +481,7 @@ export default function RouteFlow() {
         </Tabs>
         
         <footer className="p-4 border-t text-[10px] text-muted-foreground text-center font-bold uppercase tracking-tighter bg-muted/5">
-          DMRC Route Intelligence Unit | v3.6.0
+          DMRC Route Intelligence Unit | v4.2.0
         </footer>
       </div>
 
@@ -496,12 +511,12 @@ export default function RouteFlow() {
           </Card>
         </div>
 
-        <div className="absolute bottom-6 right-6 flex gap-2">
+        <div className="absolute bottom-6 right-6 flex gap-2 z-20">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={handleResetNetwork} 
-            className="shadow-xl bg-card hover:bg-primary/5 transition-all border-primary/20 font-bold gap-2"
+            className="shadow-xl bg-card hover:bg-primary/5 transition-all border-primary/20 font-bold gap-2 pointer-events-auto"
           >
             <RefreshCw className="w-3 h-3" /> Reset Network
           </Button>
