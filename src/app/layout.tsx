@@ -2,8 +2,8 @@ import type {Metadata} from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'RouteFlow – Metro Route Planner',
-  description: 'Advanced graph-based route planning for modern metro networks.',
+  title: 'Delhi Metro Navigator',
+  description: 'Smart route planning for the Delhi Metro Rail Corporation (DMRC) network.',
 };
 
 export default function RootLayout({

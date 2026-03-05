@@ -32,19 +32,23 @@ import { aiNetworkConstructor } from "@/ai/flows/ai-network-constructor";
 
 const INITIAL_DATA: NetworkData = {
   stations: [
-    { id: "1", name: "Central Station", x: 500, y: 500 },
-    { id: "2", name: "North Park", x: 500, y: 200 },
-    { id: "3", name: "West Gate", x: 200, y: 500 },
-    { id: "4", name: "East Port", x: 800, y: 500 },
-    { id: "5", name: "South Mall", x: 500, y: 800 },
+    { id: "1", name: "Rajiv Chowk", x: 500, y: 500 },
+    { id: "2", name: "Kashmere Gate", x: 500, y: 300 },
+    { id: "3", name: "New Delhi", x: 500, y: 420 },
+    { id: "4", name: "Noida Electronic City", x: 850, y: 500 },
+    { id: "5", name: "Hauz Khas", x: 500, y: 750 },
+    { id: "6", name: "Central Secretariat", x: 500, y: 580 },
+    { id: "7", name: "Dwarka Sector 21", x: 150, y: 500 },
+    { id: "8", name: "Huda City Centre", x: 500, y: 900 },
   ],
   connections: [
-    { from: "1", to: "2", weight: 5 },
-    { from: "1", to: "3", weight: 7 },
-    { from: "1", to: "4", weight: 4 },
-    { from: "1", to: "5", weight: 8 },
-    { from: "2", to: "4", weight: 10 },
-    { from: "3", to: "5", weight: 6 },
+    { from: "2", to: "3", weight: 5 },
+    { from: "3", to: "1", weight: 3 },
+    { from: "1", to: "6", weight: 4 },
+    { from: "6", to: "5", weight: 12 },
+    { from: "5", to: "8", weight: 20 },
+    { from: "1", to: "4", weight: 45 },
+    { from: "1", to: "7", weight: 50 },
   ]
 };
 
@@ -113,7 +117,6 @@ export default function RouteFlow() {
     try {
       const result = await aiNetworkConstructor({ description: aiDescription });
       
-      // Transform adjacency list to our internal structure
       const newStations: Station[] = [];
       const newConnections: Connection[] = [];
       const stationMap = new Map<string, string>();
@@ -123,7 +126,6 @@ export default function RouteFlow() {
         const id = (i + 1).toString();
         stationMap.set(name, id);
         
-        // Circular layout for AI generated networks initially
         const angle = (i / stationNames.length) * Math.PI * 2;
         newStations.push({
           id,
@@ -168,16 +170,16 @@ export default function RouteFlow() {
             <Train className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-primary">RouteFlow</h1>
-            <p className="text-xs text-muted-foreground font-medium">Metro Network Architect</p>
+            <h1 className="text-xl font-bold tracking-tight text-primary">Delhi Metro</h1>
+            <p className="text-xs text-muted-foreground font-medium">Official Route Planner</p>
           </div>
         </header>
 
         <Tabs defaultValue="plan" className="flex-1 flex flex-col">
           <TabsList className="grid grid-cols-3 mx-4 mt-4 bg-muted/50 p-1 rounded-xl">
-            <TabsTrigger value="plan" className="rounded-lg data-[state=active]:shadow-sm"><Route className="w-4 h-4 mr-2" /> Plan</TabsTrigger>
-            <TabsTrigger value="build" className="rounded-lg data-[state=active]:shadow-sm"><Settings className="w-4 h-4 mr-2" /> Build</TabsTrigger>
-            <TabsTrigger value="ai" className="rounded-lg data-[state=active]:shadow-sm"><Sparkles className="w-4 h-4 mr-2" /> AI</TabsTrigger>
+            <TabsTrigger value="plan" className="rounded-lg data-[state=active]:shadow-sm"><Route className="w-4 h-4 mr-2" /> Navigate</TabsTrigger>
+            <TabsTrigger value="build" className="rounded-lg data-[state=active]:shadow-sm"><Settings className="w-4 h-4 mr-2" /> Editor</TabsTrigger>
+            <TabsTrigger value="ai" className="rounded-lg data-[state=active]:shadow-sm"><Sparkles className="w-4 h-4 mr-2" /> AI Builder</TabsTrigger>
           </TabsList>
 
           {/* Planning Tab */}
@@ -185,7 +187,7 @@ export default function RouteFlow() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Navigation className="w-3 h-3" /> Search Strategy
+                  <Navigation className="w-3 h-3" /> Trip Settings
                 </Label>
                 <div className="grid grid-cols-2 gap-2">
                   <Button 
@@ -195,7 +197,7 @@ export default function RouteFlow() {
                     className="h-12 flex flex-col items-center justify-center"
                   >
                     <Clock className="w-4 h-4 mb-1" />
-                    <span className="text-[10px]">Shortest Time</span>
+                    <span className="text-[10px]">Fastest Route</span>
                   </Button>
                   <Button 
                     variant={optimizationType === 'min-hops' ? 'default' : 'outline'}
@@ -204,17 +206,17 @@ export default function RouteFlow() {
                     className="h-12 flex flex-col items-center justify-center"
                   >
                     <Zap className="w-4 h-4 mb-1" />
-                    <span className="text-[10px]">Min Hops</span>
+                    <span className="text-[10px]">Fewest Changes</span>
                   </Button>
                 </div>
               </div>
 
               <div className="space-y-4 pt-2">
                 <div className="space-y-2">
-                  <Label htmlFor="source" className="text-sm font-medium">Source Station</Label>
+                  <Label htmlFor="source" className="text-sm font-medium">From</Label>
                   <Select value={sourceId} onValueChange={setSourceId}>
                     <SelectTrigger id="source" className="bg-background">
-                      <SelectValue placeholder="Select starting point" />
+                      <SelectValue placeholder="Origin station" />
                     </SelectTrigger>
                     <SelectContent>
                       {data.stations.map(s => (
@@ -225,10 +227,10 @@ export default function RouteFlow() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="dest" className="text-sm font-medium">Destination Station</Label>
+                  <Label htmlFor="dest" className="text-sm font-medium">To</Label>
                   <Select value={destId} onValueChange={setDestId}>
                     <SelectTrigger id="dest" className="bg-background">
-                      <SelectValue placeholder="Select destination" />
+                      <SelectValue placeholder="Destination station" />
                     </SelectTrigger>
                     <SelectContent>
                       {data.stations.map(s => (
@@ -244,20 +246,20 @@ export default function RouteFlow() {
               <Card className="border-accent/30 bg-accent/5 overflow-hidden">
                 <CardHeader className="p-4 bg-accent/10 border-b border-accent/20">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Navigation className="w-4 h-4 text-accent" /> Route Found
+                    <Navigation className="w-4 h-4 text-accent" /> Journey Plan
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 space-y-4">
                   <div className="flex justify-between items-center text-sm border-b pb-3">
                     <div className="flex flex-col items-center flex-1">
-                      <span className="text-xs text-muted-foreground uppercase font-bold tracking-tighter mb-1">Duration</span>
+                      <span className="text-xs text-muted-foreground uppercase font-bold tracking-tighter mb-1">Time</span>
                       <span className="text-lg font-bold text-primary flex items-center">
                         <Clock className="w-4 h-4 mr-1 text-accent" /> {activeRoute.totalWeight}m
                       </span>
                     </div>
                     <div className="w-px h-10 bg-border mx-4"></div>
                     <div className="flex flex-col items-center flex-1">
-                      <span className="text-xs text-muted-foreground uppercase font-bold tracking-tighter mb-1">Stops</span>
+                      <span className="text-xs text-muted-foreground uppercase font-bold tracking-tighter mb-1">Stations</span>
                       <span className="text-lg font-bold text-primary flex items-center">
                         <Navigation className="w-4 h-4 mr-1 text-accent" /> {activeRoute.hops}
                       </span>
@@ -265,7 +267,7 @@ export default function RouteFlow() {
                   </div>
                   
                   <div className="space-y-3">
-                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Itinerary</span>
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Travel Chain</span>
                     <div className="space-y-1 relative pl-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-accent/40 before:rounded-full">
                       {activeRoute.path.map((sid, idx) => {
                         const station = data.stations.find(s => s.id === sid);
@@ -285,8 +287,8 @@ export default function RouteFlow() {
             ) : sourceId && destId && sourceId !== destId ? (
               <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-lg text-destructive text-center space-y-2">
                 <Search className="w-8 h-8 mx-auto opacity-50" />
-                <p className="text-sm font-semibold">No path exists between stations.</p>
-                <p className="text-xs opacity-70">Check connections or add new tracks to bridge the gap.</p>
+                <p className="text-sm font-semibold">No direct path found.</p>
+                <p className="text-xs opacity-70">The selected stations are not connected in the current graph.</p>
               </div>
             ) : null}
           </TabsContent>
@@ -310,7 +312,7 @@ export default function RouteFlow() {
               </div>
 
               <div className="p-4 border rounded-lg space-y-3">
-                <h3 className="text-sm font-bold flex items-center gap-2"><ChevronRight className="w-4 h-4 text-primary" /> New Connection</h3>
+                <h3 className="text-sm font-bold flex items-center gap-2"><ChevronRight className="w-4 h-4 text-primary" /> New Track</h3>
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-2">
                     <Select onValueChange={(val) => (window as any)._connFrom = val}>
@@ -343,11 +345,11 @@ export default function RouteFlow() {
               {selectedStationId && (
                 <div className="p-4 border-destructive/20 bg-destructive/5 border rounded-lg space-y-3">
                    <h3 className="text-sm font-bold text-destructive flex items-center gap-2">
-                    <Trash2 className="w-4 h-4" /> Danger Zone
+                    <Trash2 className="w-4 h-4" /> Management
                   </h3>
-                  <p className="text-xs text-muted-foreground">Station: {data.stations.find(s => s.id === selectedStationId)?.name}</p>
+                  <p className="text-xs text-muted-foreground">Modify: {data.stations.find(s => s.id === selectedStationId)?.name}</p>
                   <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDeleteStation(selectedStationId)}>
-                    Delete Station
+                    Remove Station
                   </Button>
                 </div>
               )}
@@ -358,12 +360,12 @@ export default function RouteFlow() {
           <TabsContent value="ai" className="flex-1 overflow-auto p-6 space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-sm font-bold flex items-center gap-2"><Sparkles className="w-4 h-4 text-accent" /> Describe Your Network</Label>
+                <Label className="text-sm font-bold flex items-center gap-2"><Sparkles className="w-4 h-4 text-accent" /> AI Network Constructor</Label>
                 <CardDescription className="text-xs">
-                  Provide a textual list of stations and their connections. Example: "Red Line connects North Station and South Station in 10 minutes. South Station links to Airport in 15 minutes."
+                  Describe a metro extension or a custom line. Example: "The Violet Line connects Kashmere Gate to Badarpur Border via Mandi House and Lajpat Nagar. Each stop takes 5 minutes."
                 </CardDescription>
                 <Textarea 
-                  placeholder="Describe your metro lines here..." 
+                  placeholder="Paste line details here..." 
                   className="min-h-[200px] text-xs font-code leading-relaxed"
                   value={aiDescription}
                   onChange={(e) => setAiDescription(e.target.value)}
@@ -374,14 +376,14 @@ export default function RouteFlow() {
                 onClick={handleConstructAiNetwork} 
                 disabled={isAiLoading || !aiDescription}
               >
-                {isAiLoading ? "Processing Network..." : "Generate Graph"}
+                {isAiLoading ? "Constructing Graph..." : "Generate from Description"}
               </Button>
             </div>
           </TabsContent>
         </Tabs>
         
         <footer className="p-4 border-t text-[10px] text-muted-foreground text-center">
-          RouteFlow v1.0 • Advanced Graph Computation Engine
+          DMRC Route Engine v2.0 • Data based on estimated travel times
         </footer>
       </div>
 
@@ -400,12 +402,12 @@ export default function RouteFlow() {
           <Card className="shadow-2xl border-primary/20 bg-card/90 backdrop-blur-md">
             <CardContent className="p-3 flex items-center gap-4">
               <div className="text-center px-2">
-                <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Nodes</span>
+                <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Stations</span>
                 <span className="text-xl font-bold font-code text-primary">{data.stations.length}</span>
               </div>
               <div className="w-px h-8 bg-border"></div>
               <div className="text-center px-2">
-                <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Edges</span>
+                <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Links</span>
                 <span className="text-xl font-bold font-code text-primary">{data.connections.length}</span>
               </div>
             </CardContent>
@@ -414,7 +416,7 @@ export default function RouteFlow() {
 
         <div className="absolute bottom-6 right-6">
           <Button variant="secondary" size="sm" onClick={() => setData(INITIAL_DATA)} className="shadow-lg border">
-            Reset Network
+            Default Network
           </Button>
         </div>
       </main>
