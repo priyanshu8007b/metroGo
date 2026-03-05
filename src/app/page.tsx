@@ -84,40 +84,40 @@ const INITIAL_DATA: NetworkData = {
     { from: "b1", to: "b2", weight: 15, line: "Blue" },
     { from: "b2", to: "b3", weight: 8, line: "Blue" },
     { from: "b3", to: "b4", weight: 5, line: "Blue" },
-    { from: "b4", to: "y5", weight: 10, line: "Blue" }, // Connects to Rajiv Chowk
+    { from: "b4", to: "y5", weight: 10, line: "Blue" }, 
     { from: "y5", to: "b5", weight: 3, line: "Blue" },
     { from: "b5", to: "b6", weight: 8, line: "Blue" },
     { from: "b6", to: "b7", weight: 8, line: "Blue" },
     { from: "b7", to: "b8", weight: 10, line: "Blue" },
     { from: "b8", to: "b9", weight: 12, line: "Blue" },
-    { from: "b6", to: "b10", weight: 15, line: "Blue" }, // Branch to Anand Vihar
+    { from: "b6", to: "b10", weight: 15, line: "Blue" },
 
     // Red Line Segments
     { from: "r1", to: "r2", weight: 10, line: "Red" },
     { from: "r2", to: "r3", weight: 5, line: "Red" },
-    { from: "r3", to: "y3", weight: 12, line: "Red" }, // Connects to Kashmere Gate
+    { from: "r3", to: "y3", weight: 12, line: "Red" }, 
     { from: "y3", to: "r4", weight: 15, line: "Red" },
     { from: "r4", to: "r5", weight: 15, line: "Red" },
 
     // Violet Line Segments
-    { from: "y3", to: "b5", weight: 10, line: "Violet" }, // KG to Mandi House
-    { from: "b5", to: "y6", weight: 5, line: "Violet" },  // MH to Cent Sec
-    { from: "y6", to: "v1", weight: 12, line: "Violet" }, // Cent Sec to Lajpat Nagar
+    { from: "y3", to: "b5", weight: 10, line: "Violet" },
+    { from: "b5", to: "y6", weight: 5, line: "Violet" },
+    { from: "y6", to: "v1", weight: 12, line: "Violet" },
     { from: "v1", to: "v2", weight: 8, line: "Violet" },
 
     // Magenta Line Segments
-    { from: "b2", to: "y7", weight: 25, line: "Magenta" }, // Janakpuri W to Hauz Khas
-    { from: "y7", to: "v2", weight: 12, line: "Magenta" }, // Hauz Khas to Kalkaji M
-    { from: "v2", to: "b8", weight: 8, line: "Magenta" },  // Kalkaji M to Botanical G
+    { from: "b2", to: "y7", weight: 25, line: "Magenta" },
+    { from: "y7", to: "v2", weight: 12, line: "Magenta" },
+    { from: "v2", to: "b8", weight: 8, line: "Magenta" },
 
     // Pink Line Segments
-    { from: "y2", to: "r2", weight: 6, line: "Pink" },     // Azadpur to NSP
-    { from: "r2", to: "b3", weight: 10, line: "Pink" },    // NSP to Rajouri G
-    { from: "b3", to: "p1", weight: 12, line: "Pink" },    // Rajouri G to South Campus
-    { from: "p1", to: "v1", weight: 15, line: "Pink" },    // South Campus to Lajpat Nagar
-    { from: "v1", to: "b7", weight: 15, line: "Pink" },    // Lajpat Nagar to Mayur Vihar-I
-    { from: "b7", to: "b10", weight: 8, line: "Pink" },    // Mayur Vihar-I to Anand Vihar
-    { from: "b10", to: "r4", weight: 10, line: "Pink" },   // Anand Vihar to Welcome
+    { from: "y2", to: "r2", weight: 6, line: "Pink" },
+    { from: "r2", to: "b3", weight: 10, line: "Pink" },
+    { from: "b3", to: "p1", weight: 12, line: "Pink" },
+    { from: "p1", to: "v1", weight: 15, line: "Pink" },
+    { from: "v1", to: "b7", weight: 15, line: "Pink" },
+    { from: "b7", to: "b10", weight: 8, line: "Pink" },
+    { from: "b10", to: "r4", weight: 10, line: "Pink" },
   ]
 };
 
@@ -180,11 +180,10 @@ export default function RouteFlow() {
     }));
   };
 
-  const handleResetNetwork = () => {
-    // Fresh clone to break all references
+  const handleResetNetwork = useCallback(() => {
     setData({
-      stations: [...INITIAL_DATA.stations.map(s => ({ ...s }))],
-      connections: [...INITIAL_DATA.connections.map(c => ({ ...c }))]
+      stations: INITIAL_DATA.stations.map(s => ({ ...s })),
+      connections: INITIAL_DATA.connections.map(c => ({ ...c }))
     });
     setSourceId("");
     setDestId("");
@@ -194,7 +193,7 @@ export default function RouteFlow() {
       title: "Network Reset", 
       description: "Map topology and selections have been restored to default DMRC configuration." 
     });
-  };
+  }, []);
 
   const handleConstructAiNetwork = async () => {
     if (!aiDescription) return;
@@ -250,7 +249,6 @@ export default function RouteFlow() {
     <div className="flex h-screen bg-background font-body overflow-hidden">
       <Toaster />
       
-      {/* Sidebar Controls */}
       <div className="w-96 flex flex-col border-r bg-card z-10 shadow-xl">
         <header className="p-6 border-b flex items-center gap-3 bg-primary/5">
           <div className="bg-primary p-2 rounded-lg shadow-inner">
@@ -366,7 +364,7 @@ export default function RouteFlow() {
                               </span>
                               {idx < activeRoute.path.length - 1 && (
                                 <span className="text-[9px] font-bold uppercase text-muted-foreground/30 tracking-tighter">
-                                  Next segment...
+                                  Line segment active...
                                 </span>
                               )}
                             </div>
@@ -485,7 +483,6 @@ export default function RouteFlow() {
         </footer>
       </div>
 
-      {/* Main Map Visualization */}
       <main className="flex-1 relative bg-background">
         <NetworkVisualizer 
           data={data}
@@ -511,7 +508,7 @@ export default function RouteFlow() {
           </Card>
         </div>
 
-        <div className="absolute bottom-6 right-6 flex gap-2 z-20">
+        <div className="absolute bottom-6 right-6 flex gap-2 z-20 pointer-events-auto">
           <Button 
             variant="outline" 
             size="sm" 

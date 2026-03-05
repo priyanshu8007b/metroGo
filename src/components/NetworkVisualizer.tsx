@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import type { NetworkData, Station, RouteResult } from "@/types/network";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +61,18 @@ export default function NetworkVisualizer({
     setDraggingId(null);
   };
 
+  const routePathD = useMemo(() => {
+    if (!activeRoute || activeRoute.path.length < 2) return "";
+    return activeRoute.path
+      .map((sid, idx) => {
+        const station = data.stations.find(s => s.id === sid);
+        if (!station) return null;
+        return `${idx === 0 ? "M" : "L"} ${station.x} ${station.y}`;
+      })
+      .filter(Boolean)
+      .join(" ");
+  }, [activeRoute, data.stations]);
+
   return (
     <div className="relative w-full h-full bg-background overflow-hidden border-r">
       <svg
@@ -89,45 +100,33 @@ export default function NetworkVisualizer({
           const lineColor = conn.line ? LINE_COLORS[conn.line] : "hsl(var(--border))";
 
           return (
-            <g key={`reg-conn-${idx}`}>
-              <line
-                x1={s1.x}
-                y1={s1.y}
-                x2={s2.x}
-                y2={s2.y}
-                stroke={lineColor}
-                strokeWidth={6}
-                strokeOpacity={0.3}
-                className="connection-line"
-                style={{ strokeLinecap: 'round' }}
-              />
-            </g>
+            <line
+              key={`reg-conn-${idx}`}
+              x1={s1.x}
+              y1={s1.y}
+              x2={s2.x}
+              y2={s2.y}
+              stroke={lineColor}
+              strokeWidth={6}
+              strokeOpacity={0.3}
+              style={{ strokeLinecap: 'round' }}
+            />
           );
         })}
 
-        {/* Active Route Segments (Drawn directly from calculated path) */}
-        {activeRoute && activeRoute.path.length > 1 && activeRoute.path.map((sid, idx) => {
-          if (idx === activeRoute.path.length - 1) return null;
-          const s1 = data.stations.find(s => s.id === sid);
-          const s2 = data.stations.find(s => s.id === activeRoute.path[idx + 1]);
-          if (!s1 || !s2) return null;
-
-          return (
-            <g key={`active-seg-${idx}`}>
-              <line
-                x1={s1.x}
-                y1={s1.y}
-                x2={s2.x}
-                y2={s2.y}
-                stroke="hsl(var(--primary))"
-                strokeWidth={12}
-                strokeLinecap="round"
-                className="animate-pulse"
-                style={{ filter: 'url(#glow)' }}
-              />
-            </g>
-          );
-        })}
+        {/* Unified Active Route Highlight */}
+        {routePathD && (
+          <path
+            d={routePathD}
+            fill="none"
+            stroke="hsl(var(--primary))"
+            strokeWidth={12}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="animate-pulse"
+            style={{ filter: 'url(#glow)' }}
+          />
+        )}
 
         {/* Stations */}
         {data.stations.map((station) => {
