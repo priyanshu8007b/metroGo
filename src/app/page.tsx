@@ -82,8 +82,8 @@ const INITIAL_DATA: NetworkData = {
     { from: "9", to: "20", weight: 12, line: "Blue" },
 
     // Red Line
+    { from: "21", to: "10", weight: 8, line: "Red" },
     { from: "10", to: "2", weight: 12, line: "Red" },
-    { from: "2", to: "21", weight: 10, line: "Red" },
     { from: "2", to: "19", weight: 15, line: "Red" },
 
     // Violet Line
@@ -168,6 +168,17 @@ export default function RouteFlow() {
       ...prev,
       connections: [...prev.connections, { from, to, weight, line }]
     }));
+  };
+
+  const handleResetNetwork = () => {
+    setData(INITIAL_DATA);
+    setSourceId("");
+    setDestId("");
+    setSelectedStationId(null);
+    toast({ 
+      title: "Network Reset", 
+      description: "Map topology and selections have been cleared." 
+    });
   };
 
   const handleConstructAiNetwork = async () => {
@@ -326,17 +337,24 @@ export default function RouteFlow() {
                     </div>
                   </div>
                   
-                  <div className="space-y-3">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Topology</span>
-                    <div className="space-y-1 relative pl-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-accent/40 before:rounded-full">
+                  <div className="space-y-4">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Station Topology Flow</span>
+                    <div className="space-y-2 relative pl-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-accent/40 before:rounded-full">
                       {activeRoute.path.map((sid, idx) => {
                         const station = data.stations.find(s => s.id === sid);
                         return (
-                          <div key={idx} className="flex items-center gap-3 relative py-1">
+                          <div key={idx} className="flex items-center gap-3 relative py-0.5">
                             <div className={`absolute -left-[22px] w-4 h-4 rounded-full border-2 transition-all ${idx === 0 || idx === activeRoute.path.length - 1 ? 'bg-accent border-accent scale-110 shadow-sm' : 'bg-card border-accent'}`}></div>
-                            <span className={`text-sm transition-colors ${idx === 0 || idx === activeRoute.path.length - 1 ? 'font-bold text-primary' : 'font-medium text-muted-foreground'}`}>
-                              {station?.name}
-                            </span>
+                            <div className="flex flex-col">
+                              <span className={`text-sm transition-colors ${idx === 0 || idx === activeRoute.path.length - 1 ? 'font-bold text-primary' : 'font-medium text-muted-foreground'}`}>
+                                {station?.name}
+                              </span>
+                              {idx < activeRoute.path.length - 1 && (
+                                <span className="text-[9px] font-bold uppercase text-muted-foreground/50 tracking-tighter">
+                                  Next segment...
+                                </span>
+                              )}
+                            </div>
                           </div>
                         );
                       })}
@@ -479,7 +497,12 @@ export default function RouteFlow() {
         </div>
 
         <div className="absolute bottom-6 right-6 flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setData(INITIAL_DATA)} className="shadow-xl bg-card hover:bg-primary/5 transition-all border-primary/20 font-bold gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleResetNetwork} 
+            className="shadow-xl bg-card hover:bg-primary/5 transition-all border-primary/20 font-bold gap-2"
+          >
             <RefreshCw className="w-3 h-3" /> Reset Network
           </Button>
         </div>
