@@ -15,7 +15,8 @@ import {
   Search,
   Zap,
   Info,
-  RefreshCw
+  RefreshCw,
+  Map as MapIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,52 +35,72 @@ import { aiNetworkConstructor } from "@/ai/flows/ai-network-constructor";
 
 const INITIAL_DATA: NetworkData = {
   stations: [
-    { id: "1", name: "Rajiv Chowk", x: 500, y: 500 },
-    { id: "2", name: "Kashmere Gate", x: 500, y: 300 },
-    { id: "3", name: "New Delhi", x: 500, y: 400 },
-    { id: "4", name: "Central Secretariat", x: 500, y: 600 },
-    { id: "5", name: "Hauz Khas", x: 500, y: 800 },
-    { id: "6", name: "Mandi House", x: 600, y: 500 },
-    { id: "7", name: "Kirti Nagar", x: 300, y: 500 },
-    { id: "8", name: "Botanical Garden", x: 850, y: 750 },
-    { id: "9", name: "Yamuna Bank", x: 750, y: 500 },
-    { id: "10", name: "Inderlok", x: 350, y: 350 },
-    { id: "11", name: "Dwarka Sector 21", x: 100, y: 800 },
-    { id: "12", name: "Noida Electronic City", x: 950, y: 500 },
+    { id: "1", name: "Rajiv Chowk", x: 500, y: 450, isInterchange: true },
+    { id: "2", name: "Kashmere Gate", x: 500, y: 200, isInterchange: true },
+    { id: "3", name: "New Delhi", x: 500, y: 350, isInterchange: true },
+    { id: "4", name: "Central Secretariat", x: 500, y: 550, isInterchange: true },
+    { id: "5", name: "Hauz Khas", x: 500, y: 750, isInterchange: true },
+    { id: "6", name: "Mandi House", x: 600, y: 450, isInterchange: true },
+    { id: "7", name: "Kirti Nagar", x: 300, y: 450, isInterchange: true },
+    { id: "8", name: "Botanical Garden", x: 850, y: 750, isInterchange: true },
+    { id: "9", name: "Yamuna Bank", x: 750, y: 450, isInterchange: true },
+    { id: "10", name: "Inderlok", x: 350, y: 300, isInterchange: true },
+    { id: "11", name: "Dwarka Sector 21", x: 100, y: 800, isInterchange: true },
+    { id: "12", name: "Noida Electronic City", x: 950, y: 450 },
     { id: "13", name: "Millennium City Centre", x: 500, y: 950 },
-    { id: "14", name: "Kalkaji Mandir", x: 700, y: 800 },
-    { id: "15", name: "Lajpat Nagar", x: 600, y: 700 },
+    { id: "14", name: "Kalkaji Mandir", x: 750, y: 750, isInterchange: true },
+    { id: "15", name: "Lajpat Nagar", x: 650, y: 650, isInterchange: true },
+    { id: "16", name: "Janakpuri West", x: 200, y: 650, isInterchange: true },
+    { id: "17", name: "Rajouri Garden", x: 250, y: 550, isInterchange: true },
+    { id: "18", name: "Azadpur", x: 400, y: 150, isInterchange: true },
+    { id: "19", name: "Welcome", x: 700, y: 200, isInterchange: true },
+    { id: "20", name: "Anand Vihar", x: 900, y: 300, isInterchange: true },
   ],
   connections: [
-    // Yellow Line (Kashmere Gate -> New Delhi -> Rajiv Chowk -> Central Sec -> Hauz Khas -> MCC)
-    { from: "2", to: "3", weight: 5 },
-    { from: "3", to: "1", weight: 3 },
-    { from: "1", to: "4", weight: 4 },
-    { from: "4", to: "15", weight: 10 }, // Approximation for Lajpat Nagar on Yellow/Violet vicinity
-    { from: "15", to: "5", weight: 8 },
-    { from: "5", to: "13", weight: 20 },
+    // Yellow Line
+    { from: "18", to: "2", weight: 8, line: "Yellow" },
+    { from: "2", to: "3", weight: 5, line: "Yellow" },
+    { from: "3", to: "1", weight: 3, line: "Yellow" },
+    { from: "1", to: "4", weight: 4, line: "Yellow" },
+    { from: "4", to: "15", weight: 6, line: "Yellow" },
+    { from: "15", to: "5", weight: 5, line: "Yellow" },
+    { from: "5", to: "13", weight: 15, line: "Yellow" },
     
-    // Blue Line (Dwarka -> Kirti Nagar -> Rajiv Chowk -> Mandi House -> Yamuna Bank -> BG -> Noida)
-    { from: "11", to: "7", weight: 30 },
-    { from: "7", to: "1", weight: 12 },
-    { from: "1", to: "6", weight: 3 },
-    { from: "6", to: "9", weight: 8 },
-    { from: "9", to: "8", weight: 12 },
-    { from: "8", to: "12", weight: 10 },
+    // Blue Line
+    { from: "11", to: "16", weight: 12, line: "Blue" },
+    { from: "16", to: "17", weight: 8, line: "Blue" },
+    { from: "17", to: "7", weight: 5, line: "Blue" },
+    { from: "7", to: "1", weight: 10, line: "Blue" },
+    { from: "1", to: "6", weight: 3, line: "Blue" },
+    { from: "6", to: "9", weight: 8, line: "Blue" },
+    { from: "9", to: "8", weight: 15, line: "Blue" },
+    { from: "8", to: "12", weight: 10, line: "Blue" },
+    { from: "9", to: "20", weight: 10, line: "Blue" },
+
+    // Red Line
+    { from: "10", to: "2", weight: 12, line: "Red" },
+    { from: "2", to: "19", weight: 15, line: "Red" },
+
+    // Violet Line
+    { from: "2", to: "6", weight: 10, line: "Violet" },
+    { from: "6", to: "4", weight: 4, line: "Violet" },
+    { from: "4", to: "15", weight: 8, line: "Violet" },
+    { from: "15", to: "14", weight: 10, line: "Violet" },
+
+    // Magenta Line
+    { from: "16", to: "5", weight: 20, line: "Magenta" },
+    { from: "5", to: "14", weight: 12, line: "Magenta" },
+    { from: "14", to: "8", weight: 8, line: "Magenta" },
+
+    // Pink Line
+    { from: "18", to: "10", weight: 10, line: "Pink" },
+    { from: "10", to: "17", weight: 8, line: "Pink" },
+    { from: "17", to: "15", weight: 15, line: "Pink" },
+    { from: "15", to: "19", weight: 25, line: "Pink" },
+    { from: "19", to: "20", weight: 5, line: "Pink" },
     
-    // Violet Line (Kashmere Gate -> Mandi House -> Central Sec -> Lajpat Nagar -> Kalkaji Mandir)
-    { from: "2", to: "6", weight: 12 },
-    { from: "6", to: "4", weight: 5 },
-    { from: "4", to: "15", weight: 8 },
-    { from: "15", to: "14", weight: 12 },
-    
-    // Magenta Line (Hauz Khas -> Kalkaji Mandir -> Botanical Garden)
-    { from: "5", to: "14", weight: 15 },
-    { from: "14", to: "8", weight: 18 },
-    
-    // Green Line / Red Line (Approx)
-    { from: "2", to: "10", weight: 10 },
-    { from: "10", to: "7", weight: 10 },
+    // Green Line Approx
+    { from: "10", to: "7", weight: 5, line: "Green" },
   ]
 };
 
@@ -131,14 +152,14 @@ export default function RouteFlow() {
     if (destId === id) setDestId("");
   };
 
-  const handleAddConnection = (from: string, to: string, weight: number) => {
+  const handleAddConnection = (from: string, to: string, weight: number, line?: string) => {
     if (from === to) return;
     const exists = data.connections.find(c => (c.from === from && c.to === to) || (c.to === from && c.from === to));
     if (exists) return;
     
     setData(prev => ({
       ...prev,
-      connections: [...prev.connections, { from, to, weight }]
+      connections: [...prev.connections, { from, to, weight, line }]
     }));
   };
 
@@ -215,7 +236,6 @@ export default function RouteFlow() {
             <TabsTrigger value="ai" className="rounded-lg data-[state=active]:shadow-sm"><Sparkles className="w-4 h-4 mr-2" /> AI Hub</TabsTrigger>
           </TabsList>
 
-          {/* Planning Tab */}
           <TabsContent value="plan" className="flex-1 overflow-auto p-6 space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
@@ -333,7 +353,6 @@ export default function RouteFlow() {
             )}
           </TabsContent>
 
-          {/* Builder Tab */}
           <TabsContent value="build" className="flex-1 overflow-auto p-6 space-y-6">
             <div className="space-y-4">
               <div className="p-4 border rounded-xl space-y-3 bg-muted/20">
@@ -396,7 +415,6 @@ export default function RouteFlow() {
             </div>
           </TabsContent>
 
-          {/* AI Hub Tab */}
           <TabsContent value="ai" className="flex-1 overflow-auto p-6 space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
@@ -423,7 +441,7 @@ export default function RouteFlow() {
         </Tabs>
         
         <footer className="p-4 border-t text-[10px] text-muted-foreground text-center font-bold uppercase tracking-tighter bg-muted/5">
-          DMRC Route Intelligence Unit | v3.5.1
+          DMRC Route Intelligence Unit | v3.6.0
         </footer>
       </div>
 
@@ -437,7 +455,6 @@ export default function RouteFlow() {
           selectedStationId={selectedStationId}
         />
         
-        {/* Statistics Overlay */}
         <div className="absolute top-6 right-6 flex flex-col items-end gap-3 pointer-events-none">
           <Card className="shadow-2xl border-primary/20 bg-card/90 backdrop-blur-md">
             <CardContent className="p-3 flex items-center gap-4">
@@ -454,7 +471,7 @@ export default function RouteFlow() {
           </Card>
         </div>
 
-        <div className="absolute bottom-6 right-6">
+        <div className="absolute bottom-6 right-6 flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setData(INITIAL_DATA)} className="shadow-xl bg-card hover:bg-primary/5 transition-all border-primary/20 font-bold gap-2">
             <RefreshCw className="w-3 h-3" /> Reset Network
           </Button>

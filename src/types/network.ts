@@ -3,12 +3,14 @@ export interface Station {
   name: string;
   x: number;
   y: number;
+  isInterchange?: boolean;
 }
 
 export interface Connection {
   from: string;
   to: string;
   weight: number;
+  line?: string;
 }
 
 export interface NetworkData {
