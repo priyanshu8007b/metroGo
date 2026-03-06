@@ -21,7 +21,8 @@ import {
   Code2,
   Database,
   Terminal,
-  FileCode
+  FileCode,
+  Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,7 +93,7 @@ const INITIAL_DATA: NetworkData = {
   ]
 };
 
-const CPP_DIJKSTRA = `// C++ Equivalent Implementation
+const CPP_DIJKSTRA = `// C++: Dijkstra's Weighted Shortest Path
 void dijkstra(int startNode, int endNode, int n) {
   vector<int> dist(n + 1, INF);
   vector<int> parent(n + 1, -1);
@@ -116,6 +117,31 @@ void dijkstra(int startNode, int endNode, int n) {
         dist[v] = dist[u] + weight;
         parent[v] = u;
         pq.push({dist[v], v});
+      }
+    }
+  }
+}`;
+
+const CPP_BFS = `// C++: Breadth-First Search (Fewest Hops)
+void bfs(int startNode, int endNode, int n) {
+  vector<int> parent(n + 1, -1);
+  vector<bool> visited(n + 1, false);
+  queue<int> q;
+
+  visited[startNode] = true;
+  q.push(startNode);
+
+  while (!q.empty()) {
+    int u = q.front();
+    q.pop();
+
+    if (u == endNode) break;
+
+    for (int v : adj[u]) {
+      if (!visited[v]) {
+        visited[v] = true;
+        parent[v] = u;
+        q.push(v);
       }
     }
   }
@@ -184,7 +210,7 @@ export default function RouteFlow() {
     setSourceId("");
     setDestId("");
     setSelectedStationId(null);
-    toast({ title: "System Reset", description: "Default DMRC topology restored." });
+    toast({ title: "Graph Re-initialized", description: "Default adjacency matrix restored." });
   }, []);
 
   const handleConstructAiNetwork = async () => {
@@ -219,9 +245,9 @@ export default function RouteFlow() {
       setData({ stations: newStations, connections: newConnections });
       setSourceId("");
       setDestId("");
-      toast({ title: "AI Generation Complete", description: `Built ${newStations.length} nodes and ${newConnections.length} edges.` });
+      toast({ title: "Compilation Success", description: `Synthesized ${newStations.length} vertices and ${newConnections.length} edges.` });
     } catch (e) {
-      toast({ title: "AI Error", variant: "destructive", description: "Could not parse graph description." });
+      toast({ title: "Parsing Error", variant: "destructive", description: "Malformed network description." });
     } finally { setIsAiLoading(false); }
   };
 
@@ -305,10 +331,20 @@ export default function RouteFlow() {
                     <div className="space-y-1 relative pl-6 border-l-2 border-primary/20 ml-2">
                       {activeRoute.path.map((sid, idx) => {
                         const s = data.stations.find(st => st.id === sid);
+                        const isTerminus = idx === 0 || idx === activeRoute.path.length - 1;
                         return (
-                          <div key={idx} className="flex items-center gap-2 py-1 relative">
-                            <div className={cn("absolute -left-[31px] w-2.5 h-2.5 rounded-full border-2", idx === 0 || idx === activeRoute.path.length-1 ? "bg-primary border-primary scale-125" : "bg-card border-primary/40")} />
-                            <span className={cn("text-xs", idx === 0 || idx === activeRoute.path.length-1 ? "font-bold text-primary" : "font-medium opacity-80")}>{s?.name}</span>
+                          <div key={idx} className="flex items-center gap-3 relative py-1.5">
+                            <div className={cn(
+                              "absolute -left-[23px] w-3 h-3 rounded-full border-2 transition-all z-10",
+                              isTerminus ? 'bg-primary border-primary scale-125 shadow-md shadow-primary/20' : 'bg-card border-primary/40'
+                            )}></div>
+                            <span className={cn(
+                              "text-xs transition-all",
+                              isTerminus ? "font-bold text-primary scale-105" : "font-medium opacity-80"
+                            )}>
+                              {s?.name}
+                              {isTerminus && <Badge variant="secondary" className="ml-2 text-[8px] h-4 py-0 px-1 opacity-70 uppercase">{idx === 0 ? 'Source' : 'Dest'}</Badge>}
+                            </span>
                           </div>
                         );
                       })}
@@ -319,7 +355,7 @@ export default function RouteFlow() {
             ) : sourceId && destId && (
               <div className="p-8 border-2 border-dashed rounded-3xl text-center opacity-40">
                 <Search className="w-10 h-10 mx-auto mb-2" />
-                <p className="text-[10px] font-bold uppercase">No direct path found in current graph topology.</p>
+                <p className="text-[10px] font-bold uppercase">No path exists in this graph topology.</p>
               </div>
             )}
           </TabsContent>
@@ -345,11 +381,19 @@ export default function RouteFlow() {
                   <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-primary">
                     <FileCode className="w-4 h-4" /> C++ Implementation Reference
                   </h3>
-                  <div className="relative group">
-                    <pre className="bg-slate-950 text-slate-300 p-4 rounded-xl font-code text-[10px] border-l-4 border-primary overflow-x-auto leading-relaxed h-[300px]">
-                      {CPP_DIJKSTRA}
-                    </pre>
-                    <Badge className="absolute top-2 right-2 opacity-50 text-[8px]">Read Only</Badge>
+                  <div className="space-y-4">
+                    <div className="relative group">
+                      <Label className="text-[9px] font-bold uppercase text-muted-foreground mb-1 block">Dijkstra.cpp</Label>
+                      <pre className="bg-slate-950 text-slate-300 p-4 rounded-xl font-code text-[9px] border-l-4 border-primary overflow-x-auto leading-relaxed">
+                        {CPP_DIJKSTRA}
+                      </pre>
+                    </div>
+                    <div className="relative group">
+                      <Label className="text-[9px] font-bold uppercase text-muted-foreground mb-1 block">BFS.cpp</Label>
+                      <pre className="bg-slate-950 text-slate-300 p-4 rounded-xl font-code text-[9px] border-l-4 border-accent overflow-x-auto leading-relaxed">
+                        {CPP_BFS}
+                      </pre>
+                    </div>
                   </div>
                 </div>
 
@@ -363,7 +407,7 @@ export default function RouteFlow() {
                       <p className="text-[11px] font-code">O((V + E) log V)</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-[10px] font-black text-primary uppercase">BFS</p>
+                      <p className="text-[10px] font-black text-accent uppercase">BFS</p>
                       <p className="text-[11px] font-code">O(V + E)</p>
                     </div>
                   </div>
@@ -376,7 +420,7 @@ export default function RouteFlow() {
             <div className="p-4 border-2 rounded-2xl space-y-4 bg-muted/10">
               <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-primary"><Terminal className="w-4 h-4" /> Node Management</h3>
               <div className="flex gap-2">
-                <Input id="station-name" placeholder="Station Name..." className="h-10 border-2" />
+                <Input id="station-name" placeholder="Vertex Name..." className="h-10 border-2" />
                 <Button size="sm" onClick={() => {
                   const input = document.getElementById('station-name') as HTMLInputElement;
                   if (input.value) { handleAddStation(input.value); input.value = ""; }
@@ -386,11 +430,11 @@ export default function RouteFlow() {
             <div className="p-4 border-2 rounded-2xl space-y-4 bg-muted/10">
               <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-primary"><ArrowRight className="w-4 h-4" /> Edge Constructor</h3>
               <div className="grid grid-cols-2 gap-2">
-                <Select onValueChange={(v) => (window as any)._f = v}><SelectTrigger className="h-10"><SelectValue placeholder="From" /></SelectTrigger><SelectContent>{data.stations.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>
-                <Select onValueChange={(v) => (window as any)._t = v}><SelectTrigger className="h-10"><SelectValue placeholder="To" /></SelectTrigger><SelectContent>{data.stations.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>
+                <Select onValueChange={(v) => (window as any)._f = v}><SelectTrigger className="h-10"><SelectValue placeholder="Vertex U" /></SelectTrigger><SelectContent>{data.stations.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>
+                <Select onValueChange={(v) => (window as any)._t = v}><SelectTrigger className="h-10"><SelectValue placeholder="Vertex V" /></SelectTrigger><SelectContent>{data.stations.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>
               </div>
               <div className="flex gap-2">
-                <Input type="number" id="edge-w" placeholder="Weight (mins)" className="h-10 border-2" defaultValue="5" />
+                <Input type="number" id="edge-w" placeholder="Weight (W)" className="h-10 border-2" defaultValue="5" />
                 <Button className="flex-1" onClick={() => {
                   const f = (window as any)._f; const t = (window as any)._t;
                   const w = parseInt((document.getElementById('edge-w') as HTMLInputElement).value) || 5;
@@ -400,7 +444,7 @@ export default function RouteFlow() {
             </div>
             {selectedStationId && (
               <div className="p-4 border-2 border-destructive/20 bg-destructive/5 rounded-2xl space-y-3">
-                <h3 className="text-xs font-black uppercase text-destructive flex items-center gap-2"><Trash2 className="w-4 h-4" /> Remove Node</h3>
+                <h3 className="text-xs font-black uppercase text-destructive flex items-center gap-2"><Trash2 className="w-4 h-4" /> Remove Vertex</h3>
                 <p className="text-sm font-bold">{data.stations.find(s => s.id === selectedStationId)?.name}</p>
                 <Button variant="destructive" className="w-full" onClick={() => handleDeleteStation(selectedStationId)}>Confirm Deletion</Button>
               </div>
@@ -411,7 +455,12 @@ export default function RouteFlow() {
             <div className="space-y-4">
               <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-primary" /><Label className="text-xs font-black uppercase">AI Graph Generator</Label></div>
               <CardDescription className="text-xs">Describe nodes and edges in natural language to construct a new graph architecture instantly.</CardDescription>
-              <Textarea placeholder="Example: Create a star topology centered at 'Hub Station' connecting to 4 satellite stations A, B, C, and D with 5 min travel times each..." className="min-h-[200px] text-xs font-code bg-muted/10 border-2" value={aiDescription} onChange={(e) => setAiDescription(e.target.value)} />
+              <Textarea 
+                placeholder="Example: Create a star topology centered at 'Hub Station' connecting to 4 satellite stations A, B, C, and D with 5 min travel times each..." 
+                className="min-h-[200px] text-xs font-code bg-muted/10 border-2" 
+                value={aiDescription} 
+                onChange={(e) => setAiDescription(e.target.value)} 
+              />
               <Button className="w-full h-12 font-black uppercase text-[10px] tracking-widest" onClick={handleConstructAiNetwork} disabled={isAiLoading || !aiDescription}>
                 {isAiLoading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Cpu className="w-4 h-4 mr-2" />} Synthesize Topology
               </Button>
@@ -420,7 +469,7 @@ export default function RouteFlow() {
         </Tabs>
         
         <footer className="p-4 border-t bg-muted/5 flex justify-between items-center px-6">
-          <span className="text-[8px] font-black uppercase tracking-widest opacity-50">metroGo Core v2.0</span>
+          <span className="text-[8px] font-black uppercase tracking-widest opacity-50">metroGo Core v2.0 // DSA LAB</span>
           <Button variant="ghost" size="sm" onClick={handleResetNetwork} className="h-7 text-[8px] font-black uppercase text-primary hover:bg-primary/10"><RefreshCw className="w-3 h-3 mr-1" /> Reset Graph</Button>
         </footer>
       </div>
