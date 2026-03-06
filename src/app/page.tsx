@@ -123,6 +123,7 @@ const INITIAL_DATA: NetworkData = {
     { from: "b3", to: "p1", weight: 12, line: "Pink" },
     { from: "p1", to: "v1", weight: 15, line: "Pink" },
     { from: "v1", to: "b7", weight: 15, line: "Pink" },
+    { from: "v1", to: "b7", weight: 15, line: "Pink" },
     { from: "b7", to: "b10", weight: 8, line: "Pink" },
     { from: "b10", to: "r4", weight: 10, line: "Pink" },
   ]
@@ -275,7 +276,7 @@ export default function RouteFlow() {
 
           <TabsContent value="plan" className="flex-1 overflow-auto p-6 space-y-6">
             <div className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Navigation className="w-3 h-3" /> Route Preference
                 </Label>
@@ -284,21 +285,21 @@ export default function RouteFlow() {
                     variant={optimizationType === 'shortest' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setOptimizationType('shortest')}
-                    className="h-12 flex flex-col items-center justify-center transition-all"
+                    className="h-auto py-3 px-2 flex flex-col items-center justify-center transition-all"
                   >
-                    <Clock className="w-4 h-4 mb-1" />
-                    <span className="text-[10px] font-bold">Fastest Route</span>
-                    <span className="text-[8px] opacity-50 font-code mt-0.5">Dijkstra's</span>
+                    <Clock className="w-5 h-5 mb-1.5" />
+                    <span className="text-[11px] font-bold leading-none">Fastest Route</span>
+                    <span className="text-[9px] opacity-60 font-code mt-1.5">Dijkstra's</span>
                   </Button>
                   <Button 
                     variant={optimizationType === 'min-hops' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setOptimizationType('min-hops')}
-                    className="h-12 flex flex-col items-center justify-center transition-all"
+                    className="h-auto py-3 px-2 flex flex-col items-center justify-center transition-all"
                   >
-                    <Zap className="w-4 h-4 mb-1" />
-                    <span className="text-[10px] font-bold">Fewest Stops</span>
-                    <span className="text-[8px] opacity-50 font-code mt-0.5">BFS Algorithm</span>
+                    <Zap className="w-5 h-5 mb-1.5" />
+                    <span className="text-[11px] font-bold leading-none">Fewest Stops</span>
+                    <span className="text-[9px] opacity-60 font-code mt-1.5">BFS Algorithm</span>
                   </Button>
                 </div>
               </div>
