@@ -24,3 +24,9 @@ export interface RouteResult {
   hops: number;
   type: 'shortest' | 'min-hops';
 }
+
+/**
+ * DSA Representation: Adjacency List
+ * Map<StationID, Array<{ target: StationID, weight: number }>>
+ */
+export type AdjacencyList = Record<string, { node: string; weight: number; name: string }[]>;

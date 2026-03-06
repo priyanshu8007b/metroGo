@@ -17,7 +17,11 @@ import {
   Info,
   RefreshCw,
   Cpu,
-  ArrowRight
+  ArrowRight,
+  Code2,
+  Database,
+  Terminal,
+  FileCode
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,16 +34,16 @@ import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 import type { NetworkData, Station, Connection, RouteResult } from "@/types/network";
-import { getShortestPath, getMinHopsPath } from "@/lib/graph-algorithms";
+import { getShortestPath, getMinHopsPath, buildAdjacencyList } from "@/lib/graph-algorithms";
 import NetworkVisualizer from "@/components/NetworkVisualizer";
 import { aiNetworkConstructor } from "@/ai/flows/ai-network-constructor";
 
 const INITIAL_DATA: NetworkData = {
   stations: [
-    // Yellow Line
     { id: "y1", name: "Samaypur Badli", x: 400, y: 50 },
     { id: "y2", name: "Azadpur", x: 450, y: 150, isInterchange: true },
     { id: "y3", name: "Kashmere Gate", x: 500, y: 250, isInterchange: true },
@@ -48,40 +52,20 @@ const INITIAL_DATA: NetworkData = {
     { id: "y6", name: "Central Secretariat", x: 500, y: 550, isInterchange: true },
     { id: "y7", name: "Hauz Khas", x: 500, y: 750, isInterchange: true },
     { id: "y8", name: "Millennium City Centre", x: 500, y: 950 },
-
-    // Blue Line
     { id: "b1", name: "Dwarka Sector 21", x: 50, y: 800, isInterchange: true },
     { id: "b2", name: "Janakpuri West", x: 200, y: 650, isInterchange: true },
     { id: "b3", name: "Rajouri Garden", x: 300, y: 550, isInterchange: true },
     { id: "b4", name: "Kirti Nagar", x: 350, y: 450, isInterchange: true },
-    // Rajiv Chowk is y5
     { id: "b5", name: "Mandi House", x: 650, y: 450, isInterchange: true },
     { id: "b6", name: "Yamuna Bank", x: 750, y: 450, isInterchange: true },
     { id: "b7", name: "Mayur Vihar-I", x: 800, y: 550, isInterchange: true },
     { id: "b8", name: "Botanical Garden", x: 850, y: 750, isInterchange: true },
-    { id: "b9", name: "Noida Electronic City", x: 950, y: 450 },
-    { id: "b10", name: "Anand Vihar", x: 900, y: 300, isInterchange: true },
-
-    // Red Line
-    { id: "r1", name: "Rithala", x: 200, y: 150 },
     { id: "r2", name: "Netaji Subhash Place", x: 350, y: 200, isInterchange: true },
-    { id: "r3", name: "Inderlok", x: 400, y: 250, isInterchange: true },
-    // Kashmere Gate is y3
-    { id: "r4", name: "Welcome", x: 800, y: 250, isInterchange: true },
-    { id: "r5", name: "Shaheed Sthal", x: 950, y: 150 },
-
-    // Violet Line
-    // Kashmere Gate is y3
-    // Mandi House is b5
-    // Central Secretariat is y6
     { id: "v1", name: "Lajpat Nagar", x: 650, y: 650, isInterchange: true },
     { id: "v2", name: "Kalkaji Mandir", x: 750, y: 750, isInterchange: true },
-
-    // Additional Interchanges for Pink/Magenta
     { id: "p1", name: "South Campus", x: 400, y: 650, isInterchange: true },
   ],
   connections: [
-    // Yellow Line Segments
     { from: "y1", to: "y2", weight: 8, line: "Yellow" },
     { from: "y2", to: "y3", weight: 10, line: "Yellow" },
     { from: "y3", to: "y4", weight: 5, line: "Yellow" },
@@ -89,8 +73,6 @@ const INITIAL_DATA: NetworkData = {
     { from: "y5", to: "y6", weight: 4, line: "Yellow" },
     { from: "y6", to: "y7", weight: 12, line: "Yellow" },
     { from: "y7", to: "y8", weight: 20, line: "Yellow" },
-
-    // Blue Line Segments
     { from: "b1", to: "b2", weight: 15, line: "Blue" },
     { from: "b2", to: "b3", weight: 8, line: "Blue" },
     { from: "b3", to: "b4", weight: 5, line: "Blue" },
@@ -99,38 +81,45 @@ const INITIAL_DATA: NetworkData = {
     { from: "b5", to: "b6", weight: 8, line: "Blue" },
     { from: "b6", to: "b7", weight: 8, line: "Blue" },
     { from: "b7", to: "b8", weight: 10, line: "Blue" },
-    { from: "b8", to: "b9", weight: 12, line: "Blue" },
-    { from: "b6", to: "b10", weight: 15, line: "Blue" },
-
-    // Red Line Segments
-    { from: "r1", to: "r2", weight: 10, line: "Red" },
-    { from: "r2", to: "r3", weight: 5, line: "Red" },
-    { from: "r3", to: "y3", weight: 12, line: "Red" },
-    { from: "y3", to: "r4", weight: 15, line: "Red" },
-    { from: "r4", to: "r5", weight: 15, line: "Red" },
-
-    // Violet Line Segments
-    { from: "y3", to: "b5", weight: 10, line: "Violet" },
-    { from: "b5", to: "y6", weight: 5, line: "Violet" },
-    { from: "y6", to: "v1", weight: 12, line: "Violet" },
-    { from: "v1", to: "v2", weight: 8, line: "Violet" },
-
-    // Magenta Line Segments
-    { from: "b2", to: "y7", weight: 25, line: "Magenta" },
-    { from: "y7", to: "v2", weight: 12, line: "Magenta" },
-    { from: "v2", to: "b8", weight: 8, line: "Magenta" },
-
-    // Pink Line Segments
     { from: "y2", to: "r2", weight: 6, line: "Pink" },
     { from: "r2", to: "b3", weight: 10, line: "Pink" },
     { from: "b3", to: "p1", weight: 12, line: "Pink" },
     { from: "p1", to: "v1", weight: 15, line: "Pink" },
     { from: "v1", to: "b7", weight: 15, line: "Pink" },
-    { from: "v1", to: "b7", weight: 15, line: "Pink" },
-    { from: "b7", to: "b10", weight: 8, line: "Pink" },
-    { from: "b10", to: "r4", weight: 10, line: "Pink" },
+    { from: "b2", to: "y7", weight: 25, line: "Magenta" },
+    { from: "y7", to: "v2", weight: 12, line: "Magenta" },
+    { from: "v2", to: "b8", weight: 8, line: "Magenta" },
   ]
 };
+
+const CPP_DIJKSTRA = `// C++ Equivalent Implementation
+void dijkstra(int startNode, int endNode, int n) {
+  vector<int> dist(n + 1, INF);
+  vector<int> parent(n + 1, -1);
+  priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+
+  dist[startNode] = 0;
+  pq.push({0, startNode});
+
+  while (!pq.empty()) {
+    int d = pq.top().first;
+    int u = pq.top().second;
+    pq.pop();
+
+    if (d > dist[u]) continue;
+    if (u == endNode) break;
+
+    for (auto& edge : adj[u]) {
+      int v = edge.to;
+      int weight = edge.weight;
+      if (dist[u] + weight < dist[v]) {
+        dist[v] = dist[u] + weight;
+        parent[v] = u;
+        pq.push({dist[v], v});
+      }
+    }
+  }
+}`;
 
 export default function RouteFlow() {
   const [data, setData] = useState<NetworkData>(INITIAL_DATA);
@@ -142,13 +131,13 @@ export default function RouteFlow() {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiDescription, setAiDescription] = useState("");
 
+  const adjList = useMemo(() => buildAdjacencyList(data.stations, data.connections), [data]);
+
   const activeRoute = useMemo(() => {
     if (!sourceId || !destId || sourceId === destId) return null;
-    if (optimizationType === 'shortest') {
-      return getShortestPath(data.stations, data.connections, sourceId, destId);
-    } else {
-      return getMinHopsPath(data.stations, data.connections, sourceId, destId);
-    }
+    return optimizationType === 'shortest' 
+      ? getShortestPath(data.stations, data.connections, sourceId, destId)
+      : getMinHopsPath(data.stations, data.connections, sourceId, destId);
   }, [data, sourceId, destId, optimizationType]);
 
   const handleUpdateStation = useCallback((updated: Station) => {
@@ -184,11 +173,7 @@ export default function RouteFlow() {
     if (from === to) return;
     const exists = data.connections.find(c => (c.from === from && c.to === to) || (c.to === from && c.from === to));
     if (exists) return;
-    
-    setData(prev => ({
-      ...prev,
-      connections: [...prev.connections, { from, to, weight, line }]
-    }));
+    setData(prev => ({ ...prev, connections: [...prev.connections, { from, to, weight, line }] }));
   };
 
   const handleResetNetwork = useCallback(() => {
@@ -199,11 +184,7 @@ export default function RouteFlow() {
     setSourceId("");
     setDestId("");
     setSelectedStationId(null);
-    setOptimizationType('shortest');
-    toast({ 
-      title: "Network Reset", 
-      description: "Map topology and selections have been restored to default configuration." 
-    });
+    toast({ title: "System Reset", description: "Default DMRC topology restored." });
   }, []);
 
   const handleConstructAiNetwork = async () => {
@@ -211,327 +192,241 @@ export default function RouteFlow() {
     setIsAiLoading(true);
     try {
       const result = await aiNetworkConstructor({ description: aiDescription });
-      
       const newStations: Station[] = [];
       const newConnections: Connection[] = [];
       const stationMap = new Map<string, string>();
-
-      const stationNames = Object.keys(result);
-      stationNames.forEach((name, i) => {
+      const names = Object.keys(result);
+      names.forEach((name, i) => {
         const id = (i + 1).toString();
         stationMap.set(name, id);
-        
-        const angle = (i / stationNames.length) * Math.PI * 2;
-        newStations.push({
-          id,
-          name,
-          x: 500 + Math.cos(angle) * 350,
-          y: 500 + Math.sin(angle) * 350,
-        });
+        const angle = (i / names.length) * Math.PI * 2;
+        newStations.push({ id, name, x: 500 + Math.cos(angle) * 350, y: 500 + Math.sin(angle) * 350 });
       });
-
-      const processedEdges = new Set<string>();
-      stationNames.forEach(name => {
+      const processed = new Set<string>();
+      names.forEach(name => {
         const fromId = stationMap.get(name)!;
         result[name].forEach(conn => {
           const toId = stationMap.get(conn.station)!;
           if (toId) {
-            const edgeKey = [fromId, toId].sort().join('-');
-            if (!processedEdges.has(edgeKey)) {
+            const key = [fromId, toId].sort().join('-');
+            if (!processed.has(key)) {
               newConnections.push({ from: fromId, to: toId, weight: conn.time });
-              processedEdges.add(edgeKey);
+              processed.add(key);
             }
           }
         });
       });
-
       setData({ stations: newStations, connections: newConnections });
       setSourceId("");
       setDestId("");
-      toast({ title: "Network Generated", description: `Successfully loaded ${newStations.length} stations.` });
+      toast({ title: "AI Generation Complete", description: `Built ${newStations.length} nodes and ${newConnections.length} edges.` });
     } catch (e) {
-      toast({ title: "AI Generation Failed", description: "Could not interpret network description.", variant: "destructive" });
-    } finally {
-      setIsAiLoading(false);
-    }
+      toast({ title: "AI Error", variant: "destructive", description: "Could not parse graph description." });
+    } finally { setIsAiLoading(false); }
   };
 
   return (
     <div className="flex h-screen bg-background font-body overflow-hidden">
       <Toaster />
-      
-      <div className="w-96 flex flex-col border-r bg-card z-10 shadow-xl relative">
+      <div className="w-[420px] flex flex-col border-r bg-card z-10 shadow-xl relative">
         <header className="p-6 border-b flex items-center gap-3 bg-primary/5 shrink-0">
           <div className="bg-primary p-2 rounded-lg shadow-inner">
             <Train className="w-6 h-6 text-primary-foreground" />
           </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-primary">metroGo</h1>
-          </div>
+          <h1 className="text-xl font-bold tracking-tight text-primary">metroGo</h1>
         </header>
 
         <Tabs defaultValue="plan" className="flex-1 flex flex-col min-h-0">
-          <TabsList className="grid grid-cols-3 mx-4 mt-4 bg-muted/50 p-1 rounded-xl shrink-0">
-            <TabsTrigger value="plan" className="rounded-lg data-[state=active]:shadow-sm"><Route className="w-4 h-4 mr-2" /> Navigate</TabsTrigger>
-            <TabsTrigger value="build" className="rounded-lg data-[state=active]:shadow-sm"><Settings className="w-4 h-4 mr-2" /> Editor</TabsTrigger>
-            <TabsTrigger value="ai" className="rounded-lg data-[state=active]:shadow-sm"><Sparkles className="w-4 h-4 mr-2" /> AI Hub</TabsTrigger>
+          <TabsList className="grid grid-cols-4 mx-4 mt-4 bg-muted/50 p-1 rounded-xl shrink-0">
+            <TabsTrigger value="plan" className="rounded-lg text-[10px]"><Route className="w-3 h-3 mr-1" /> Nav</TabsTrigger>
+            <TabsTrigger value="dsa" className="rounded-lg text-[10px]"><Code2 className="w-3 h-3 mr-1" /> DSA</TabsTrigger>
+            <TabsTrigger value="build" className="rounded-lg text-[10px]"><Settings className="w-3 h-3 mr-1" /> Edit</TabsTrigger>
+            <TabsTrigger value="ai" className="rounded-lg text-[10px]"><Sparkles className="w-3 h-3 mr-1" /> AI</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="plan" className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0 scrollbar-thin">
+          <TabsContent value="plan" className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">
             <div className="space-y-4">
               <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                  <Route className="w-3 h-3" /> Route Preference
-                </Label>
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Optimization Engine</Label>
                 <div className="grid grid-cols-2 gap-3">
-                  <Button 
-                    variant={optimizationType === 'shortest' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setOptimizationType('shortest')}
-                    className="h-auto py-3 px-2 flex flex-col items-center justify-center transition-all gap-1 border-2"
-                  >
-                    <Clock className="w-5 h-5" />
-                    <span className="text-[11px] font-bold leading-none">Fastest Route</span>
-                    <span className="text-[9px] opacity-60 font-code">Dijkstra</span>
+                  <Button variant={optimizationType === 'shortest' ? 'default' : 'outline'} size="sm" onClick={() => setOptimizationType('shortest')} className="h-auto py-3 px-2 flex flex-col items-center border-2">
+                    <Clock className="w-5 h-5 mb-1" />
+                    <span className="text-[11px] font-bold">Fastest Route</span>
+                    <span className="text-[9px] opacity-60">Dijkstra's Algorithm</span>
                   </Button>
-                  <Button 
-                    variant={optimizationType === 'min-hops' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setOptimizationType('min-hops')}
-                    className="h-auto py-3 px-2 flex flex-col items-center justify-center transition-all gap-1 border-2"
-                  >
-                    <Zap className="w-5 h-5" />
-                    <span className="text-[11px] font-bold leading-none">Fewest Stops</span>
-                    <span className="text-[9px] opacity-60 font-code">BFS Algorithm</span>
+                  <Button variant={optimizationType === 'min-hops' ? 'default' : 'outline'} size="sm" onClick={() => setOptimizationType('min-hops')} className="h-auto py-3 px-2 flex flex-col items-center border-2">
+                    <Zap className="w-5 h-5 mb-1" />
+                    <span className="text-[11px] font-bold">Fewest Stops</span>
+                    <span className="text-[9px] opacity-60">BFS Algorithm</span>
                   </Button>
                 </div>
               </div>
 
-              <div className="space-y-4 pt-2">
+              <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="source" className="text-xs font-bold uppercase text-muted-foreground">Origin Station</Label>
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Origin</Label>
                   <Select value={sourceId} onValueChange={setSourceId}>
-                    <SelectTrigger id="source" className="bg-background h-11 border-2">
-                      <SelectValue placeholder="Select starting point" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {data.stations.sort((a,b) => a.name.localeCompare(b.name)).map(s => (
-                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectTrigger className="h-10 border-2"><SelectValue placeholder="Select Origin" /></SelectTrigger>
+                    <SelectContent>{data.stations.sort((a,b) => a.name.localeCompare(b.name)).map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="dest" className="text-xs font-bold uppercase text-muted-foreground">Destination Station</Label>
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Destination</Label>
                   <Select value={destId} onValueChange={setDestId}>
-                    <SelectTrigger id="dest" className="bg-background h-11 border-2">
-                      <SelectValue placeholder="Select destination" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {data.stations.sort((a,b) => a.name.localeCompare(b.name)).map(s => (
-                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectTrigger className="h-10 border-2"><SelectValue placeholder="Select Target" /></SelectTrigger>
+                    <SelectContent>{data.stations.sort((a,b) => a.name.localeCompare(b.name)).map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               </div>
             </div>
 
             {activeRoute ? (
-              <div className="animate-in slide-in-from-bottom-4 fade-in duration-500 pb-4">
-                <Card className="border-primary/20 bg-primary/5 shadow-md overflow-hidden">
-                  <CardHeader className="p-4 bg-primary/10 border-b border-primary/20">
+              <div className="animate-in slide-in-from-bottom-2 duration-300">
+                <Card className="border-primary/20 bg-primary/5">
+                  <CardHeader className="p-4 bg-primary/10 border-b">
                     <div className="flex justify-between items-center">
                       <CardTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
                         <Navigation className="w-3 h-3 text-primary" /> Journey Summary
                       </CardTitle>
-                      <Badge variant="outline" className="text-[9px] h-5 bg-background border-primary/30 gap-1 uppercase font-bold">
-                        <Cpu className="w-2.5 h-2.5" /> {optimizationType === 'shortest' ? 'Dijkstra' : 'BFS'}
-                      </Badge>
+                      <Badge variant="outline" className="text-[9px] font-code h-5 uppercase">{optimizationType}</Badge>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-4 space-y-5">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex flex-col items-center bg-background/50 p-3 rounded-xl border border-primary/10">
-                        <span className="text-[9px] text-muted-foreground uppercase font-black mb-1">Total Time</span>
-                        <span className="text-lg font-bold text-primary flex items-center">
-                          <Clock className="w-4 h-4 mr-1.5 text-primary" /> {activeRoute.totalWeight}m
-                        </span>
+                  <CardContent className="p-4 space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-background/80 p-3 rounded-xl border border-primary/10 text-center">
+                        <p className="text-[8px] font-bold text-muted-foreground uppercase mb-1">Time (Est)</p>
+                        <p className="text-lg font-bold text-primary">{activeRoute.totalWeight}m</p>
                       </div>
-                      <div className="flex flex-col items-center bg-background/50 p-3 rounded-xl border border-primary/10">
-                        <span className="text-[9px] text-muted-foreground uppercase font-black mb-1">Stations</span>
-                        <span className="text-lg font-bold text-primary flex items-center">
-                          <Route className="w-4 h-4 mr-1.5 text-primary" /> {activeRoute.hops}
-                        </span>
+                      <div className="bg-background/80 p-3 rounded-xl border border-primary/10 text-center">
+                        <p className="text-[8px] font-bold text-muted-foreground uppercase mb-1">Interchanges</p>
+                        <p className="text-lg font-bold text-primary">{activeRoute.hops}</p>
                       </div>
                     </div>
-                    
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Separator className="flex-1 bg-primary/20" />
-                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest shrink-0">Topology Path</span>
-                        <Separator className="flex-1 bg-primary/20" />
-                      </div>
-                      <div className="space-y-0.5 relative pl-6 before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-0.5 before:bg-primary/20 before:rounded-full">
-                        {activeRoute.path.map((sid, idx) => {
-                          const station = data.stations.find(s => s.id === sid);
-                          const isTerminus = idx === 0 || idx === activeRoute.path.length - 1;
-                          return (
-                            <div key={idx} className="flex items-center gap-3 relative py-1.5">
-                              <div className={cn(
-                                "absolute -left-[23px] w-3 h-3 rounded-full border-2 transition-all z-10",
-                                isTerminus ? 'bg-primary border-primary scale-125 shadow-md shadow-primary/20' : 'bg-card border-primary/40'
-                              )}></div>
-                              <span className={cn(
-                                "text-[13px] leading-tight transition-colors",
-                                isTerminus ? 'font-bold text-primary' : 'font-medium text-foreground/80'
-                              )}>
-                                {station?.name}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
+                    <div className="space-y-1 relative pl-6 border-l-2 border-primary/20 ml-2">
+                      {activeRoute.path.map((sid, idx) => {
+                        const s = data.stations.find(st => st.id === sid);
+                        return (
+                          <div key={idx} className="flex items-center gap-2 py-1 relative">
+                            <div className={cn("absolute -left-[31px] w-2.5 h-2.5 rounded-full border-2", idx === 0 || idx === activeRoute.path.length-1 ? "bg-primary border-primary scale-125" : "bg-card border-primary/40")} />
+                            <span className={cn("text-xs", idx === 0 || idx === activeRoute.path.length-1 ? "font-bold text-primary" : "font-medium opacity-80")}>{s?.name}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>
               </div>
-            ) : sourceId && destId && sourceId !== destId ? (
-              <div className="p-6 bg-destructive/5 border-2 border-dashed border-destructive/20 rounded-2xl text-destructive text-center space-y-3">
-                <Search className="w-10 h-10 mx-auto opacity-30" />
-                <div>
-                  <p className="text-sm font-bold">Network Gap Detected</p>
-                  <p className="text-xs opacity-70 mt-1 leading-relaxed">No topological link exists between these terminals in the current network layer.</p>
-                </div>
-              </div>
-            ) : (
-              <div className="p-10 border-2 border-dashed rounded-3xl text-center space-y-4 opacity-40 bg-muted/5 mt-4">
-                <MapPin className="w-12 h-12 mx-auto text-muted-foreground" />
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] leading-relaxed">Select Terminal Points<br/>to generate optimal flow</p>
+            ) : sourceId && destId && (
+              <div className="p-8 border-2 border-dashed rounded-3xl text-center opacity-40">
+                <Search className="w-10 h-10 mx-auto mb-2" />
+                <p className="text-[10px] font-bold uppercase">No direct path found in current graph topology.</p>
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="build" className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">
-            <div className="space-y-4">
-              <div className="p-4 border-2 rounded-2xl space-y-4 bg-muted/20">
-                <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-primary"><Plus className="w-4 h-4" /> Create Station</h3>
-                <div className="flex gap-2">
-                  <Input id="new-station-name" placeholder="Name..." className="flex-1 h-10 border-2" />
-                  <Button size="sm" className="px-5 font-bold" onClick={() => {
-                    const input = document.getElementById('new-station-name') as HTMLInputElement;
-                    if (input.value) {
-                      handleAddStation(input.value);
-                      input.value = "";
-                      toast({ title: "Node Integrated", description: "New station mapped into topological grid." });
-                    }
-                  }}>Add</Button>
-                </div>
-              </div>
-
-              <div className="p-4 border-2 rounded-2xl space-y-4 bg-muted/20">
-                <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-primary"><ArrowRight className="w-4 h-4" /> Link Infrastructure</h3>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <Select onValueChange={(val) => (window as any)._connFrom = val}>
-                      <SelectTrigger className="h-10 border-2"><SelectValue placeholder="Origin" /></SelectTrigger>
-                      <SelectContent>{data.stations.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
-                    </Select>
-                    <Select onValueChange={(val) => (window as any)._connTo = val}>
-                      <SelectTrigger className="h-10 border-2"><SelectValue placeholder="Target" /></SelectTrigger>
-                      <SelectContent>{data.stations.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex gap-3 items-end">
-                    <div className="flex-1 space-y-2">
-                      <Label className="text-[9px] font-black uppercase text-muted-foreground">Weight (min)</Label>
-                      <Input type="number" id="conn-weight" defaultValue="5" className="h-10 border-2" />
-                    </div>
-                    <Button className="w-full h-10 font-bold" onClick={() => {
-                      const from = (window as any)._connFrom;
-                      const to = (window as any)._connTo;
-                      const weight = parseInt((document.getElementById('conn-weight') as HTMLInputElement).value) || 5;
-                      if (from && to) {
-                        handleAddConnection(from, to, weight);
-                        toast({ title: "Link Established", description: "Temporal edge created between nodes." });
-                      }
-                    }}>Establish Link</Button>
-                  </div>
-                </div>
-              </div>
-
-              {selectedStationId && (
-                <div className="p-4 border-2 border-destructive/20 bg-destructive/5 rounded-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
-                   <h3 className="text-xs font-black uppercase tracking-widest text-destructive flex items-center gap-2">
-                    <Trash2 className="w-4 h-4" /> Decommission Node
+          <TabsContent value="dsa" className="flex-1 overflow-hidden p-6 space-y-4">
+            <ScrollArea className="h-full pr-4">
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-primary">
+                    <Database className="w-4 h-4" /> Adjacency List (Live)
                   </h3>
-                  <div className="p-3 bg-background rounded-xl border border-destructive/10">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Selected Target</p>
-                    <p className="text-sm font-bold text-destructive">{data.stations.find(s => s.id === selectedStationId)?.name}</p>
+                  <div className="bg-muted/30 p-4 rounded-xl font-code text-[10px] border leading-relaxed overflow-x-auto">
+                    {Object.entries(adjList).map(([node, neighbors]) => (
+                      <div key={node} className="mb-1">
+                        <span className="text-primary font-bold">[{data.stations.find(s => s.id === node)?.name}]</span> → 
+                        {neighbors.length > 0 ? neighbors.map(n => ` ${n.name}(${n.weight}m)`).join(',') : ' Empty'}
+                      </div>
+                    ))}
                   </div>
-                  <Button variant="destructive" size="sm" className="w-full h-10 font-bold" onClick={() => handleDeleteStation(selectedStationId)}>
-                    Confirm Deletion
-                  </Button>
                 </div>
-              )}
-            </div>
+
+                <div className="space-y-3">
+                  <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-primary">
+                    <FileCode className="w-4 h-4" /> C++ Implementation Reference
+                  </h3>
+                  <div className="relative group">
+                    <pre className="bg-slate-950 text-slate-300 p-4 rounded-xl font-code text-[10px] border-l-4 border-primary overflow-x-auto leading-relaxed h-[300px]">
+                      {CPP_DIJKSTRA}
+                    </pre>
+                    <Badge className="absolute top-2 right-2 opacity-50 text-[8px]">Read Only</Badge>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-muted/20 border rounded-2xl space-y-3">
+                  <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                    <Cpu className="w-4 h-4" /> Algorithmic Complexity
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-primary uppercase">Dijkstra</p>
+                      <p className="text-[11px] font-code">O((V + E) log V)</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-primary uppercase">BFS</p>
+                      <p className="text-[11px] font-code">O(V + E)</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="ai" className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">
-            <div className="space-y-5">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                  <Label className="text-xs font-black uppercase tracking-widest">Natural Language Synthesis</Label>
-                </div>
-                <CardDescription className="text-xs leading-relaxed font-medium">
-                  Describe your metro lines, stations, and travel times. The AI will instantly generate the entire topological map for you.
-                </CardDescription>
-                <Textarea 
-                  placeholder="e.g. Create a circular 'Blue Line' connecting Dwarka to Rajiv Chowk (15 mins), then to Yamuna Bank (8 mins), and back to Dwarka (20 mins)..." 
-                  className="min-h-[220px] text-xs font-code leading-relaxed bg-muted/10 border-2 focus-visible:ring-primary/20"
-                  value={aiDescription}
-                  onChange={(e) => setAiDescription(e.target.value)}
-                />
+          <TabsContent value="build" className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="p-4 border-2 rounded-2xl space-y-4 bg-muted/10">
+              <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-primary"><Terminal className="w-4 h-4" /> Node Management</h3>
+              <div className="flex gap-2">
+                <Input id="station-name" placeholder="Station Name..." className="h-10 border-2" />
+                <Button size="sm" onClick={() => {
+                  const input = document.getElementById('station-name') as HTMLInputElement;
+                  if (input.value) { handleAddStation(input.value); input.value = ""; }
+                }}>Add</Button>
               </div>
-              <Button 
-                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-black shadow-lg shadow-primary/20 transition-all uppercase tracking-widest text-[11px]" 
-                onClick={handleConstructAiNetwork} 
-                disabled={isAiLoading || !aiDescription}
-              >
-                {isAiLoading ? (
-                  <span className="flex items-center gap-2"><RefreshCw className="w-4 h-4 animate-spin" /> Synthesizing Graph...</span>
-                ) : "Synthesize Architecture"}
+            </div>
+            <div className="p-4 border-2 rounded-2xl space-y-4 bg-muted/10">
+              <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-primary"><ArrowRight className="w-4 h-4" /> Edge Constructor</h3>
+              <div className="grid grid-cols-2 gap-2">
+                <Select onValueChange={(v) => (window as any)._f = v}><SelectTrigger className="h-10"><SelectValue placeholder="From" /></SelectTrigger><SelectContent>{data.stations.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>
+                <Select onValueChange={(v) => (window as any)._t = v}><SelectTrigger className="h-10"><SelectValue placeholder="To" /></SelectTrigger><SelectContent>{data.stations.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>
+              </div>
+              <div className="flex gap-2">
+                <Input type="number" id="edge-w" placeholder="Weight (mins)" className="h-10 border-2" defaultValue="5" />
+                <Button className="flex-1" onClick={() => {
+                  const f = (window as any)._f; const t = (window as any)._t;
+                  const w = parseInt((document.getElementById('edge-w') as HTMLInputElement).value) || 5;
+                  if (f && t) handleAddConnection(f, t, w);
+                }}>Connect</Button>
+              </div>
+            </div>
+            {selectedStationId && (
+              <div className="p-4 border-2 border-destructive/20 bg-destructive/5 rounded-2xl space-y-3">
+                <h3 className="text-xs font-black uppercase text-destructive flex items-center gap-2"><Trash2 className="w-4 h-4" /> Remove Node</h3>
+                <p className="text-sm font-bold">{data.stations.find(s => s.id === selectedStationId)?.name}</p>
+                <Button variant="destructive" className="w-full" onClick={() => handleDeleteStation(selectedStationId)}>Confirm Deletion</Button>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="ai" className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-primary" /><Label className="text-xs font-black uppercase">AI Graph Generator</Label></div>
+              <CardDescription className="text-xs">Describe nodes and edges in natural language to construct a new graph architecture instantly.</CardDescription>
+              <Textarea placeholder="Example: Create a star topology centered at 'Hub Station' connecting to 4 satellite stations A, B, C, and D with 5 min travel times each..." className="min-h-[200px] text-xs font-code bg-muted/10 border-2" value={aiDescription} onChange={(e) => setAiDescription(e.target.value)} />
+              <Button className="w-full h-12 font-black uppercase text-[10px] tracking-widest" onClick={handleConstructAiNetwork} disabled={isAiLoading || !aiDescription}>
+                {isAiLoading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Cpu className="w-4 h-4 mr-2" />} Synthesize Topology
               </Button>
             </div>
           </TabsContent>
         </Tabs>
         
-        <footer className="p-4 border-t text-[9px] text-muted-foreground text-center font-bold uppercase tracking-[0.3em] bg-muted/5 shrink-0">
-          metroGo | Intelligence Core v4.2.5
+        <footer className="p-4 border-t bg-muted/5 flex justify-between items-center px-6">
+          <span className="text-[8px] font-black uppercase tracking-widest opacity-50">metroGo Core v2.0</span>
+          <Button variant="ghost" size="sm" onClick={handleResetNetwork} className="h-7 text-[8px] font-black uppercase text-primary hover:bg-primary/10"><RefreshCw className="w-3 h-3 mr-1" /> Reset Graph</Button>
         </footer>
       </div>
 
       <main className="flex-1 relative bg-background">
-        <NetworkVisualizer 
-          data={data}
-          activeRoute={activeRoute}
-          onUpdateStation={handleUpdateStation}
-          onSelectStation={setSelectedStationId}
-          selectedStationId={selectedStationId}
-        />
-        
-        <div className="absolute bottom-8 right-8 flex gap-3 z-20">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleResetNetwork} 
-            className="h-11 px-6 shadow-2xl bg-card hover:bg-primary/5 transition-all border-2 border-primary/20 font-black gap-2 text-[10px] uppercase tracking-widest rounded-full"
-          >
-            <RefreshCw className="w-4 h-4 text-primary" /> Reset Topological Data
-          </Button>
-        </div>
+        <NetworkVisualizer data={data} activeRoute={activeRoute} onUpdateStation={handleUpdateStation} onSelectStation={setSelectedStationId} selectedStationId={selectedStationId} />
       </main>
     </div>
   );
