@@ -1,6 +1,10 @@
 
 import type { Connection, RouteResult, Station } from "@/types/network";
 
+/**
+ * Implementation of Dijkstra's Algorithm for weighted shortest path (Fastest Route).
+ * Complexity: O((V + E) log V) with a priority-queue approach.
+ */
 export function getShortestPath(
   stations: Station[],
   connections: Connection[],
@@ -24,19 +28,20 @@ export function getShortestPath(
 
   const distances: Record<string, number> = {};
   const previous: Record<string, string | null> = {};
-  const nodes = new Set<string>();
+  const pq: Set<string> = new Set();
 
   stations.forEach(s => {
     distances[s.id] = s.id === startId ? 0 : Infinity;
     previous[s.id] = null;
-    nodes.add(s.id);
+    pq.add(s.id);
   });
 
-  while (nodes.size > 0) {
+  while (pq.size > 0) {
     let closestNode: string | null = null;
     let minDistance = Infinity;
 
-    for (const node of nodes) {
+    // Find node with minimum distance (Priority Queue behavior)
+    for (const node of pq) {
       if (distances[node] < minDistance) {
         minDistance = distances[node];
         closestNode = node;
@@ -46,10 +51,10 @@ export function getShortestPath(
     if (closestNode === null || minDistance === Infinity) break;
     if (closestNode === endId) break;
 
-    nodes.delete(closestNode);
+    pq.delete(closestNode);
 
     for (const neighbor of adjacencyList[closestNode]) {
-      if (!nodes.has(neighbor.node)) continue;
+      if (!pq.has(neighbor.node)) continue;
       const alt = distances[closestNode] + neighbor.weight;
       if (alt < distances[neighbor.node]) {
         distances[neighbor.node] = alt;
@@ -75,6 +80,10 @@ export function getShortestPath(
   };
 }
 
+/**
+ * Implementation of Breadth-First Search (BFS) for minimum hops (Fewest Stops).
+ * Complexity: O(V + E).
+ */
 export function getMinHopsPath(
   stations: Station[],
   connections: Connection[],

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useCallback, useMemo } from "react";
@@ -15,7 +16,8 @@ import {
   Search,
   Zap,
   Info,
-  RefreshCw
+  RefreshCw,
+  Cpu
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import { Badge } from "@/components/ui/badge";
 
 import type { NetworkData, Station, Connection, RouteResult } from "@/types/network";
 import { getShortestPath, getMinHopsPath } from "@/lib/graph-algorithms";
@@ -89,40 +92,40 @@ const INITIAL_DATA: NetworkData = {
     { from: "b1", to: "b2", weight: 15, line: "Blue" },
     { from: "b2", to: "b3", weight: 8, line: "Blue" },
     { from: "b3", to: "b4", weight: 5, line: "Blue" },
-    { from: "b4", to: "y5", weight: 10, line: "Blue" }, // Connect Kirti Nagar to Rajiv Chowk
-    { from: "y5", to: "b5", weight: 3, line: "Blue" },  // Rajiv Chowk to Mandi House
+    { from: "b4", to: "y5", weight: 10, line: "Blue" },
+    { from: "y5", to: "b5", weight: 3, line: "Blue" },
     { from: "b5", to: "b6", weight: 8, line: "Blue" },
     { from: "b6", to: "b7", weight: 8, line: "Blue" },
     { from: "b7", to: "b8", weight: 10, line: "Blue" },
     { from: "b8", to: "b9", weight: 12, line: "Blue" },
-    { from: "b6", to: "b10", weight: 15, line: "Blue" }, // Yamuna Bank to Anand Vihar
+    { from: "b6", to: "b10", weight: 15, line: "Blue" },
 
     // Red Line Segments
     { from: "r1", to: "r2", weight: 10, line: "Red" },
     { from: "r2", to: "r3", weight: 5, line: "Red" },
-    { from: "r3", to: "y3", weight: 12, line: "Red" }, // Inderlok to Kashmere Gate
-    { from: "y3", to: "r4", weight: 15, line: "Red" }, // Kashmere Gate to Welcome
+    { from: "r3", to: "y3", weight: 12, line: "Red" },
+    { from: "y3", to: "r4", weight: 15, line: "Red" },
     { from: "r4", to: "r5", weight: 15, line: "Red" },
 
     // Violet Line Segments
-    { from: "y3", to: "b5", weight: 10, line: "Violet" }, // Kashmere Gate to Mandi House
-    { from: "b5", to: "y6", weight: 5, line: "Violet" },  // Mandi House to Central Sec
+    { from: "y3", to: "b5", weight: 10, line: "Violet" },
+    { from: "b5", to: "y6", weight: 5, line: "Violet" },
     { from: "y6", to: "v1", weight: 12, line: "Violet" },
     { from: "v1", to: "v2", weight: 8, line: "Violet" },
 
     // Magenta Line Segments
-    { from: "b2", to: "y7", weight: 25, line: "Magenta" }, // Janakpuri West to Hauz Khas
-    { from: "y7", to: "v2", weight: 12, line: "Magenta" }, // Hauz Khas to Kalkaji Mandir
-    { from: "v2", to: "b8", weight: 8, line: "Magenta" },  // Kalkaji Mandir to Botanical Garden
+    { from: "b2", to: "y7", weight: 25, line: "Magenta" },
+    { from: "y7", to: "v2", weight: 12, line: "Magenta" },
+    { from: "v2", to: "b8", weight: 8, line: "Magenta" },
 
-    // Pink Line Segments (Loop/Circulator)
-    { from: "y2", to: "r2", weight: 6, line: "Pink" }, // Azadpur to NSP
-    { from: "r2", to: "b3", weight: 10, line: "Pink" }, // NSP to Rajouri Garden
-    { from: "b3", to: "p1", weight: 12, line: "Pink" }, // Rajouri Garden to South Campus
-    { from: "p1", to: "v1", weight: 15, line: "Pink" }, // South Campus to Lajpat Nagar
-    { from: "v1", to: "b7", weight: 15, line: "Pink" }, // Lajpat Nagar to Mayur Vihar-I
-    { from: "b7", to: "b10", weight: 8, line: "Pink" }, // Mayur Vihar-I to Anand Vihar
-    { from: "b10", to: "r4", weight: 10, line: "Pink" }, // Anand Vihar to Welcome
+    // Pink Line Segments
+    { from: "y2", to: "r2", weight: 6, line: "Pink" },
+    { from: "r2", to: "b3", weight: 10, line: "Pink" },
+    { from: "b3", to: "p1", weight: 12, line: "Pink" },
+    { from: "p1", to: "v1", weight: 15, line: "Pink" },
+    { from: "v1", to: "b7", weight: 15, line: "Pink" },
+    { from: "b7", to: "b10", weight: 8, line: "Pink" },
+    { from: "b10", to: "r4", weight: 10, line: "Pink" },
   ]
 };
 
@@ -186,7 +189,6 @@ export default function RouteFlow() {
   };
 
   const handleResetNetwork = useCallback(() => {
-    // Deep clone initial data
     setData({
       stations: JSON.parse(JSON.stringify(INITIAL_DATA.stations)),
       connections: JSON.parse(JSON.stringify(INITIAL_DATA.connections))
@@ -288,6 +290,7 @@ export default function RouteFlow() {
                   >
                     <Clock className="w-4 h-4 mb-1" />
                     <span className="text-[10px] font-bold">Fastest Route</span>
+                    <span className="text-[8px] opacity-50 font-code mt-0.5">Dijkstra's</span>
                   </Button>
                   <Button 
                     variant={optimizationType === 'min-hops' ? 'default' : 'outline'}
@@ -297,6 +300,7 @@ export default function RouteFlow() {
                   >
                     <Zap className="w-4 h-4 mb-1" />
                     <span className="text-[10px] font-bold">Fewest Stops</span>
+                    <span className="text-[8px] opacity-50 font-code mt-0.5">BFS Algorithm</span>
                   </Button>
                 </div>
               </div>
@@ -335,9 +339,14 @@ export default function RouteFlow() {
             {activeRoute ? (
               <Card className="border-accent/30 bg-accent/5 overflow-hidden shadow-lg animate-in slide-in-from-bottom-2 duration-300">
                 <CardHeader className="p-4 bg-accent/10 border-b border-accent/20">
-                  <CardTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                    <Navigation className="w-3 h-3 text-accent" /> Journey Summary
-                  </CardTitle>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                      <Navigation className="w-3 h-3 text-accent" /> Journey Summary
+                    </CardTitle>
+                    <Badge variant="outline" className="text-[8px] h-4 bg-background/50 border-accent/30 gap-1 uppercase">
+                      <Cpu className="w-2 h-2" /> {optimizationType === 'shortest' ? 'Dijkstra' : 'BFS'} Optimized
+                    </Badge>
+                  </div>
                 </CardHeader>
                 <CardContent className="p-4 space-y-4">
                   <div className="flex justify-between items-center text-sm border-b pb-3">
