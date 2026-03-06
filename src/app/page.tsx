@@ -126,6 +126,7 @@ const INITIAL_DATA: NetworkData = {
     { from: "b3", to: "p1", weight: 12, line: "Pink" },
     { from: "p1", to: "v1", weight: 15, line: "Pink" },
     { from: "v1", to: "b7", weight: 15, line: "Pink" },
+    { from: "v1", to: "b7", weight: 15, line: "Pink" },
     { from: "b7", to: "b10", weight: 8, line: "Pink" },
     { from: "b10", to: "r4", weight: 10, line: "Pink" },
   ]
@@ -485,10 +486,10 @@ export default function RouteFlow() {
                   <Label className="text-xs font-black uppercase tracking-widest">Natural Language Synthesis</Label>
                 </div>
                 <CardDescription className="text-xs leading-relaxed font-medium">
-                  Input a textual description of metro line segments or network architecture. The AI will reconstruct the adjacency list graph.
+                  Describe your metro lines, stations, and travel times. The AI will instantly generate the entire topological map for you.
                 </CardDescription>
                 <Textarea 
-                  placeholder="e.g. A direct express line connects Dwarka to IGI Airport in 12 minutes, with a stop at Aerocity..." 
+                  placeholder="e.g. Create a circular 'Blue Line' connecting Dwarka to Rajiv Chowk (15 mins), then to Yamuna Bank (8 mins), and back to Dwarka (20 mins)..." 
                   className="min-h-[220px] text-xs font-code leading-relaxed bg-muted/10 border-2 focus-visible:ring-primary/20"
                   value={aiDescription}
                   onChange={(e) => setAiDescription(e.target.value)}
