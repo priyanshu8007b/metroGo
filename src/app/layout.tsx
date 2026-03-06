@@ -2,7 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Delhi Metro Navigator',
+  title: 'metroGo',
   description: 'Smart route planning for the Delhi Metro Rail Corporation (DMRC) network.',
 };
 

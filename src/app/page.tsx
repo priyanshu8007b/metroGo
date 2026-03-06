@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useCallback, useMemo } from "react";
@@ -263,7 +262,7 @@ export default function RouteFlow() {
             <Train className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-primary">DMRC Navigator</h1>
+            <h1 className="text-xl font-bold tracking-tight text-primary">metroGo</h1>
             <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Delhi Metro Rail Corp</p>
           </div>
         </header>
@@ -489,7 +488,7 @@ export default function RouteFlow() {
         </Tabs>
         
         <footer className="p-4 border-t text-[10px] text-muted-foreground text-center font-bold uppercase tracking-tighter bg-muted/5">
-          DMRC Route Intelligence Unit | v4.2.0
+          metroGo Intelligence Unit | v4.2.0
         </footer>
       </div>
 
