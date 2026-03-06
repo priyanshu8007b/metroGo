@@ -493,22 +493,6 @@ export default function RouteFlow() {
           selectedStationId={selectedStationId}
         />
         
-        <div className="absolute top-6 right-6 flex flex-col items-end gap-3 pointer-events-none">
-          <Card className="shadow-2xl border-primary/20 bg-card/90 backdrop-blur-md">
-            <CardContent className="p-3 flex items-center gap-4">
-              <div className="text-center px-2">
-                <span className="block text-[10px] font-black text-muted-foreground uppercase tracking-widest">Nodes</span>
-                <span className="text-2xl font-black font-code text-primary leading-none">{data.stations.length}</span>
-              </div>
-              <div className="w-px h-8 bg-border"></div>
-              <div className="text-center px-2">
-                <span className="block text-[10px] font-black text-muted-foreground uppercase tracking-widest">Edges</span>
-                <span className="text-2xl font-black font-code text-primary leading-none">{data.connections.length}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         <div className="absolute bottom-6 right-6 flex gap-2 z-20 pointer-events-auto">
           <Button 
             variant="outline" 
