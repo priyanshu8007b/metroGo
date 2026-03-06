@@ -30,6 +30,7 @@ import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 import type { NetworkData, Station, Connection, RouteResult } from "@/types/network";
 import { getShortestPath, getMinHopsPath } from "@/lib/graph-algorithms";
