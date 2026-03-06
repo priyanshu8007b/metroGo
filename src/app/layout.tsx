@@ -3,7 +3,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'metroGo',
-  description: 'Smart route planning for the Delhi Metro Rail Corporation (DMRC) network.',
+  description: 'Smart route planning for urban transit networks.',
 };
 
 export default function RootLayout({

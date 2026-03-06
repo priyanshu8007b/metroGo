@@ -198,7 +198,7 @@ export default function RouteFlow() {
     setOptimizationType('shortest');
     toast({ 
       title: "Network Reset", 
-      description: "Map topology and selections have been restored to default DMRC configuration." 
+      description: "Map topology and selections have been restored to default configuration." 
     });
   }, []);
 
@@ -263,7 +263,6 @@ export default function RouteFlow() {
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-primary">metroGo</h1>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Delhi Metro Rail Corp</p>
           </div>
         </header>
 
